@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Administración - Tienda Virtual</title>
+
+  <link rel="stylesheet" href="../css/ventas.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="logo">
+      <img src="/img/logo.png" alt="Logo Tienda">
+      <h1>Tienda Virtual</h1>
+    </div>
+
+    <nav>
+      <ul>
+        <li><a href="../index.html">Inicio</a></li>
+        <li><a href="./productos.html">Gestionar Productos</a></li>
+        <li><a href="./gestion_ventas.html">Gestionar Ventas</a></li>
+      </ul>
+    </nav>
+
+    <!-- Contenedor dinámico para usuario/admin -->
+    <div class="header-actions" id="headerActions"></div>
+  </header>
+
+  <!-- ===== PANEL ADMIN ===== -->
+  <main style="margin-top: 140px;">
+    <nav class="panel-nav">
+      <button onclick="mostrarSeccion('usuarios')">👤 Usuarios</button>
+      <button onclick="mostrarSeccion('ventas')">💰 Ventas</button>
+    </nav>
+
+    <section id="usuarios" class="seccion visible">
+      <h2>Gestión de Usuarios</h2>
+      <table id="tablaUsuarios">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="ventas" class="seccion">
+      <h2>Gestión de Ventas</h2>
+
+      <div class="buscador">
+        <input type="text" id="busquedaUsuario" placeholder="Buscar por ID o nombre de usuario">
+        <button onclick="filtrarVentas()">🔍 Buscar</button>
+        <button onclick="cargarVentas()">🔄 Mostrar todas</button>
+      </div>
+
+      <table id="tablaVentas">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Método Pago</th>
+            <th>Total (S/)</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <p id="mensaje"></p>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Tienda Virtual</h3>
+        <p>Tu tienda de confianza para compras en línea</p>
+        <div class="social-links">
+          <a href="#" aria-label="Facebook">📘 Facebook</a>
+          <a href="#" aria-label="Instagram">📷 Instagram</a>
+          <a href="#" aria-label="WhatsApp">💬 WhatsApp</a>
+        </div>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Enlaces Rápidos</h4>
+        <ul>
+          <li><a href="#">Inicio</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+          <li><a href="./html/login.html">Iniciar Sesión</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Contacto</h4>
+        <p>📧 info@tiendavirtual.com</p>
+        <p>📞 +51 987 654 321</p>
+        <p>📍 Lima, Perú</p>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Horario de Atención</h4>
+        <p>Lunes a Viernes: 9:00 AM - 7:00 PM</p>
+        <p>Sábados: 9:00 AM - 2:00 PM</p>
+        <p>Domingos: Cerrado</p>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; 2024 Tienda Virtual. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="../js/ventas.js"></script>
+  <script>
+    // ===== Estado usuario =====
+    const usuario = JSON.parse(localStorage.getItem('usuario'));
+    if (!usuario) {
+      window.location.href = './login.html';
+    }
+
+    const headerActions = document.getElementById('headerActions');
+
+    // Saludo
+    const spanNombre = document.createElement('span');
+    spanNombre.textContent = `Hola, ${usuario.nombre}`;
+    spanNombre.style.marginRight = '10px';
+    headerActions.appendChild(spanNombre);
+
+    // Botón Admin (solo para Administrador)
+    if (usuario.rol && usuario.rol.nombre.toUpperCase() === 'ADMINISTRADOR') {
+      const btnAdmin = document.createElement('button');
+      btnAdmin.textContent = '🛠 Administrador';
+      btnAdmin.className = 'btn-admin';
+      btnAdmin.onclick = () => window.location.href = './gestion_ventas.html';
+      headerActions.appendChild(btnAdmin);
+    }
+
+    // Botón Cerrar sesión
+    const btnLogout = document.createElement('button');
+    btnLogout.textContent = 'Cerrar sesión';
+    btnLogout.className = 'btn-logout';
+    btnLogout.onclick = () => {
+      localStorage.removeItem('usuario');
+      window.location.href = '../index.html';
+    };
+    headerActions.appendChild(btnLogout);
+  </script>
+
+</body>
+</html>
