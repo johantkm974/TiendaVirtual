@@ -1,17 +1,21 @@
-# Imagen base de Java 21
-FROM eclipse-temurin:21-jdk
+# Imagen base con Java y Maven preinstalado
+FROM maven:3.9.9-eclipse-temurin-21
 
-# Crear directorio de trabajo
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Copiar el código fuente
+# Copiar el pom.xml y descargar dependencias primero (cache eficiente)
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copiar el resto del código fuente
 COPY . .
 
-# Construir la aplicación (usa el Maven Wrapper incluido)
-RUN ./mvnw clean package -DskipTests
+# Compilar y crear el .jar (sin ejecutar tests)
+RUN mvn clean package -DskipTests
 
-# Exponer el puerto donde corre Spring Boot
+# Exponer el puerto donde corre la app
 EXPOSE 8080
 
-# Comando para iniciar la app
+# Comando de inicio
 CMD ["java", "-jar", "target/demo-0.0.1-SNAPSHOT.jar"]
