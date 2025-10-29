@@ -20,8 +20,7 @@ COPY --from=builder /app/target/*.jar app.jar
 # Exponer el puerto del contenedor
 EXPOSE 8080
 
-
-# Railway las provee automáticamente
+# ✅ SOLO el puerto, NADA de config de DB
 ENV SERVER_PORT=8080
 
 # Comando de inicio
