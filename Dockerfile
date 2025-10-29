@@ -17,12 +17,12 @@ WORKDIR /app
 # Copiar el .jar desde la etapa anterior
 COPY --from=builder /app/target/*.jar app.jar
 
+# Crear usuario no-root para seguridad
+RUN useradd -m myapp
+USER myapp
+
 # Exponer el puerto del contenedor
 EXPOSE 8080
 
-# ✅ SOLO el puerto, NADA de config de DB
-ENV SERVER_PORT=8080
-
-# Comando de inicio
+# Comando de inicio con debugging
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
