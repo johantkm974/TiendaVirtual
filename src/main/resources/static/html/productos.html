@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Productos - Minimarket</title>
+  <link rel="stylesheet" href="../css/ventas.css">
+  <link rel="stylesheet" href="../css/productos.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+  <div class="loader-overlay" id="loader">
+    <div class="loader"></div>
+  </div>
+  <header class="header">
+    <div class="logo">
+      <img src="/img/logo.png" alt="Logo Tienda">
+      <h1>Tienda Virtual</h1>
+    </div>
+
+    <nav >
+      <ul>
+        <li><a href="../index.html">Inicio</a></li>
+        <li><a href="./productos.html">Gestionar Productos</a></li>
+        <li><a href="./gestion_ventas.html">Gestionar Ventas</a></li>
+      </ul>
+    </nav>
+
+    <!-- Contenedor para usuario/admin -->
+    <div class="header-actions" id="headerActions"></div>
+  </header>
+
+  <h1>Gestión de Productos</h1>
+
+  <div class="acciones">
+    <select id="filtroCategoria">
+      <option value="">Todas las categorías</option>
+    </select>
+    <button id="btnAgregar">➕ Agregar Producto</button>
+  </div>
+
+  <table id="tablaProductos">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Categoría</th>
+        <th>Imagen</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Modal -->
+  <div class="modal" id="modalProducto">
+    <div class="modal-content">
+      <span class="close" id="cerrarModal">&times;</span>
+      <h2 id="tituloModal">Nuevo Producto</h2>
+      <form id="productoForm">
+        <input type="hidden" id="id">
+        <input type="text" id="nombre" placeholder="Nombre" required>
+        <input type="text" id="descripcion" placeholder="Descripción">
+        <input type="number" id="precio" placeholder="Precio" step="any" required>
+        <input type="number" id="stock" placeholder="Stock" required>
+        <select name="categoria.id" required></select>
+        <input type="hidden" id="imagenActual">
+        <input type="file" id="imagen" accept="image/*">
+        <img id="imagenPreview" src="" style="display:none;">
+        <button type="submit">Guardar</button>
+      </form>
+    </div>
+  </div>
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Tienda Virtual</h3>
+        <p>Tu tienda de confianza para compras en línea</p>
+        <div class="social-links">
+          <a href="#" aria-label="Facebook">📘 Facebook</a>
+          <a href="#" aria-label="Instagram">📷 Instagram</a>
+          <a href="#" aria-label="WhatsApp">💬 WhatsApp</a>
+        </div>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Enlaces Rápidos</h4>
+        <ul>
+          <li><a href="#">Inicio</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+          <li><a href="./html/login.html">Iniciar Sesión</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Contacto</h4>
+        <p>📧 info@tiendavirtual.com</p>
+        <p>📞 +51 987 654 321</p>
+        <p>📍 Lima, Perú</p>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Horario de Atención</h4>
+        <p>Lunes a Viernes: 9:00 AM - 7:00 PM</p>
+        <p>Sábados: 9:00 AM - 2:00 PM</p>
+        <p>Domingos: Cerrado</p>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; 2024 Tienda Virtual. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="../js/productos.js"></script>
+
+</body>
+</html>
