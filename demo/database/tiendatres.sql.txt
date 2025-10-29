@@ -1,0 +1,171 @@
+CREATE DATABASE tiendatres;
+USE tiendatres;
+
+-- ============================================
+-- TABLA ROL
+-- ============================================
+CREATE TABLE rol (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(50) NOT NULL,
+  descripcion VARCHAR(100)
+);
+
+-- ============================================
+-- TABLA USUARIO
+-- ============================================
+CREATE TABLE usuario (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  correo VARCHAR(100) UNIQUE NOT NULL,
+  contrasena VARCHAR(255) NOT NULL,
+  rol_id INT,
+  FOREIGN KEY (rol_id) REFERENCES rol(id)
+);
+
+-- ============================================
+-- TABLA CATEGORIA
+-- ============================================
+CREATE TABLE categoria (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  descripcion VARCHAR(255)
+);
+
+-- ============================================
+-- TABLA PRODUCTO
+-- ============================================
+CREATE TABLE producto (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  descripcion VARCHAR(255),
+  precio DECIMAL(10,2) NOT NULL,
+  stock INT NOT NULL,
+  categoria_id INT,
+  imagen_url VARCHAR(255),
+  FOREIGN KEY (categoria_id) REFERENCES categoria(id)
+);
+
+-- ============================================
+-- TABLA MÉTODO DE PAGO
+-- ============================================
+CREATE TABLE metodo_pago (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(50) NOT NULL,
+  descripcion VARCHAR(100)
+);
+
+-- ============================================
+-- TABLA VENTA
+-- ============================================
+CREATE TABLE venta (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT,
+  metodo_pago_id INT,
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  total DECIMAL(10,2),
+  payment_id VARCHAR(255),
+  estado_pago VARCHAR(50) DEFAULT 'PENDIENTE',
+  FOREIGN KEY (usuario_id) REFERENCES usuario(id),
+  FOREIGN KEY (metodo_pago_id) REFERENCES metodo_pago(id)
+);
+
+-- ============================================
+-- TABLA DETALLE_VENTA
+-- ============================================
+CREATE TABLE detalle_venta (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  venta_id INT,
+  producto_id INT,
+  cantidad INT NOT NULL,
+  precio_unitario DECIMAL(10,2) NOT NULL,
+  subtotal DECIMAL(10,2) NOT NULL,
+  FOREIGN KEY (venta_id) REFERENCES venta(id),
+  FOREIGN KEY (producto_id) REFERENCES producto(id)
+);
+
+-- ============================================
+-- INSERTAR DATOS INICIALES
+-- ============================================
+
+-- Roles
+INSERT INTO rol (nombre, descripcion) VALUES
+('Administrador', 'Tiene acceso total al sistema'),
+('Cliente', 'Puede comprar productos y ver su historial');
+
+-- Usuarios
+INSERT INTO usuario (nombre, correo, contrasena, rol_id) VALUES
+('Johan Vasquez', 'admin@gmail.com', 'admin123', 1),
+('Carlos López', 'carlos@gmail.com', 'cliente123', 2);
+
+-- Categorías
+INSERT INTO categoria (nombre, descripcion) VALUES
+('Alimentos', 'Productos comestibles y de consumo diario'),
+('Bebidas', 'Jugos, gaseosas, aguas y bebidas energéticas'),
+('Limpieza', 'Productos para el aseo y desinfección del hogar'),
+('Higiene Personal', 'Artículos de cuidado personal y belleza'),
+('Otros', 'Productos varios y accesorios complementarios');
+
+-- Productos
+-- ============================================
+-- INSERTAR 30 PRODUCTOS CON SUS CATEGORÍAS Y RUTAS DE IMAGEN
+-- ============================================
+INSERT INTO producto (nombre, descripcion, precio, stock, categoria_id, imagen_url) VALUES
+-- 🥖 Alimentos (1)
+('Arroz Costeño 1kg', 'Arroz de alta calidad para consumo diario', 5.00, 43, 1, '/uploads/img/productos/1760720411423_Arroz.webp'),
+('Aceite Primor 1L', 'Aceite vegetal para cocina', 10.00, 32, 1, '/uploads/img/productos/1760720766638_acite.webp'),
+('Fideos Don Vittorio 500g', 'Fideos de trigo para sopa', 2.50, 54, 1, '/uploads/img/productos/1760720776186_Fideos Don Vittorio 500g.webp'),
+('Leche Gloria 1L', 'Leche pasteurizada', 5.00, 26, 1, '/uploads/img/productos/1760720786135_Leche Gloria 1L.webp'),
+('Pan Bimbo 500g', 'Pan de molde integral', 6.00, 19, 1, '/uploads/img/productos/1760720795789_Pan Bimbo 500g.webp'),
+('Azúcar Blanca 1kg', 'Azúcar refinada para uso doméstico', 3.20, 48, 1, '/uploads/img/productos/1760720803657_Azúcar Blanca 1kg.webp'),
+
+-- 🥤 Bebidas (2)
+('Gaseosa Inca Kola 3L', 'Refresco nacional peruano', 10.50, 30, 2, '/uploads/img/productos/1760722236355_Gaseosa Inca Kola 3L.webp'),
+('Agua Cielo 1.5L', 'Agua mineral purificada', 2.50, 50, 2, '/uploads/img/productos/1760722250287_Agua Cielo 1.5L.webp'),
+('Jugo Frutal Del Valle 1L', 'Jugo de frutas natural', 6.00, 40, 2, '/uploads/img/productos/1760722272736_Jugo Frutal Del Valle 1L.webp'),
+('Cerveza Cusqueña 330ml', 'Cerveza rubia peruana', 7.00, 20, 2, '/uploads/img/productos/1760722291099_Cerveza Cusqueña 330ml.jpg'),
+('Café Nescafé 200g', 'Café soluble instantáneo', 12.00, 35, 2, '/uploads/img/productos/1760722298857_Café Nescafé 200g.webp'),
+('Té Lipton 20 bolsitas', 'Té negro en bolsitas', 5.50, 25, 2, '/uploads/img/productos/1760722308848_Té Lipton 20 bolsitas.webp'),
+
+-- 🧽 Limpieza (3)
+('Detergente Ariel 1kg', 'Detergente en polvo para lavado de ropa', 8.00, 20, 3, '/uploads/img/productos/1760722781470_Detergente Ariel 1kg.webp'),
+('Suavizante Downy 500ml', 'Suavizante para ropa', 7.50, 25, 3, '/uploads/img/productos/1760722793518_Suavizante Downy 500ml.webp'),
+('Jabón Líquido Limpio 1L', 'Jabón para limpieza general', 6.00, 30, 3, '/uploads/img/productos/1760722810668_Jabón Líquido Limpio 1L.webp'),
+('Cloro La Garra 1L', 'Desinfectante y blanqueador', 4.50, 40, 3, '/uploads/img/productos/1760722831916_Cloro La Garra 1L.jpg'),
+('Limpiador Mr. Músculo 500ml', 'Limpiador multiuso', 5.50, 20, 3, '/uploads/img/productos/1760722853608_Limpiador Mr. Músculo 500ml.webp'),
+('Esponjas LimpiaTodo 3 unidades', 'Esponjas para limpieza del hogar', 3.00, 50, 3, '/uploads/img/productos/1760722864732_Esponjas LimpiaTodo 3 unidades.jpg'),
+
+-- 🧴 Higiene Personal (4)
+('Shampoo Sedal 350ml', 'Shampoo revitalizante con vitaminas', 9.50, 25, 4, '/uploads/img/productos/1760723210876_Shampoo Sedal 350ml.webp'),
+('Jabón Dove 100g', 'Jabón suave para piel', 2.50, 40, 4, '/uploads/img/productos/1760723235260_Jabón Dove 100g.webp'),
+('Pasta Dental Colgate 100g', 'Pasta dental con flúor', 3.00, 50, 4, '/uploads/img/productos/1760723245236_Pasta Dental Colgate 100g.webp'),
+('Cepillo Dental Oral-B', 'Cepillo de dientes suave', 4.00, 30, 4, '/uploads/img/productos/1760723253126_Cepillo Dental Oral.webp'),
+('Desodorante Rexona 150ml', 'Desodorante antitranspirante', 6.50, 20, 4, '/uploads/img/productos/1760723296624_Desodorante Rexona.webp'),
+('Crema Nivea 200ml', 'Crema humectante para piel', 8.00, 15, 4, '/uploads/img/productos/1760723315014_Crema Nivea 200ml.webp'),
+
+-- ⚙️ Otros (5)
+('Pilas Energizer AA', 'Pilas de larga duración', 6.00, 15, 5, '/uploads/img/productos/1760723662453_Pilas Energizer AA.webp'),
+('Cinta Adhesiva 1 rollo', 'Cinta transparente para oficina', 2.50, 30, 5, '/uploads/img/productos/1760723675328_Cinta Adhesiva 1 rollo.webp'),
+('Libreta Universitaria', 'Libreta de 100 hojas', 3.50, 50, 5, '/uploads/img/productos/1760723690740_Libreta Universitaria.jpg'),
+('Mochila Escolar', 'Mochila resistente para estudiantes', 25.00, 20, 5, '/uploads/img/productos/1760723698936_Mochila Escolar.webp'),
+('Lápices de Colores 12u', 'Set de lápices de colores', 4.00, 40, 5, '/uploads/img/productos/1760723706750_Lápices de Colores 12u.jpg'),
+('Batería Externa 10000mAh', 'Power bank para cargar dispositivos', 35.00, 10, 5, '/uploads/img/productos/1760723713803_Batería Externa 10000mAh.webp');
+
+
+-- Métodos de Pago
+INSERT INTO metodo_pago (nombre, descripcion) VALUES
+('PayPal', 'Pago a través de PayPal'),
+('MercadoPago', 'Pago atraves de MercadoPago'),
+('Tarjeta', 'Pago con tarjeta de débito o crédito'),
+('Yape', 'Pago móvil con Yape');
+
+-- Ventas
+INSERT INTO venta (usuario_id, metodo_pago_id, total, payment_id, estado_pago) VALUES
+(2, 1, 25.00, NULL, 'COMPLETADO'),
+(2, 3, 15.50, NULL, 'PENDIENTE');
+
+-- Detalles de Venta
+INSERT INTO detalle_venta (venta_id, producto_id, cantidad, precio_unitario, subtotal) VALUES
+(1, 1, 2, 4.50, 9.00),
+(1, 2, 1, 10.00, 10.00),
+(2, 3, 1, 10.50, 10.50),
+(2, 6, 1, 6.00, 6.00);
