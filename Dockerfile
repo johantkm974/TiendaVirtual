@@ -1,40 +1,34 @@
-# Etapa 1: Construcción
+# ==============================
+# Etapa 1: Construcción con Maven
+# ==============================
 FROM maven:3.9.9-eclipse-temurin-21 AS builder
+
+# Directorio de trabajo
 WORKDIR /app
 
-# Copiar pom y descargar dependencias
-COPY demo/pom.xml demo/pom.xml
-WORKDIR /app/demo
+# Copiar pom.xml y descargar dependencias
+COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copiar el código fuente
-COPY demo /app/demo
-
-# Compilar sin tests
+# Copiar el código fuente y compilar
+COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Etapa 2: Ejecución
+# ==============================
+# Etapa 2: Imagen final
+# ==============================
 FROM eclipse-temurin:21-jdk
+
 WORKDIR /app
 
-# Copiar el jar generado
-COPY --from=builder /app/demo/target/*.jar app.jar
+# Copiar el jar desde la etapa anterior
+COPY --from=builder /app/target/*.jar app.jar
 
-# Exponer puerto
+# Puerto expuesto (Railway lo detecta automáticamente)
 EXPOSE 8080
 
-# Variables de entorno por defecto (Railway las puede sobreescribir)
-ENV SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:40609/railway?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC \
-    SPRING_DATASOURCE_USERNAME=root \
-    SPRING_DATASOURCE_PASSWORD=LofWYUWXAKncyfmRllDPPWcswLStwsyi \
-    SPRING_JPA_HIBERNATE_DDL_AUTO=update \
-    SPRING_JPA_SHOW_SQL=true
+# Variables de entorno (Railway las sobreescribe)
+ENV SPRING_PROFILES_ACTIVE=prod
 
+# Comando de inicio
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
-
-
-
-
-
-
