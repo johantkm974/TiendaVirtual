@@ -3,23 +3,30 @@ package com.example.demo.service;
 import com.example.demo.model.Venta;
 import com.example.demo.model.DetalleVenta;
 import org.springframework.stereotype.Service;
+import java.io.FileOutputStream;
+import java.io.File;
+import java.time.format.DateTimeFormatter;
+import java.text.DecimalFormat;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
-
-import java.io.ByteArrayOutputStream;
-import java.text.DecimalFormat;
-import java.time.format.DateTimeFormatter;
 
 @Service
 public class PdfGeneratorService {
 
-    public byte[] generarReciboPDF(Venta venta) throws Exception {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    public String generarReciboPDF(Venta venta) throws Exception {
+        String carpeta = "recibos_pdf";
+        File directorio = new File(carpeta);
+        if (!directorio.exists()) {
+            directorio.mkdirs();
+        }
+
+        String nombreArchivo = carpeta + "/recibo_venta_" + venta.getId() + ".pdf";
 
         Document document = new Document(PageSize.A4, 50, 50, 70, 50);
-        PdfWriter.getInstance(document, outputStream);
+        PdfWriter.getInstance(document, new FileOutputStream(nombreArchivo));
         document.open();
 
+        // ==== FORMATEADOR DE MONEDA ====
         DecimalFormat formatoMoneda = new DecimalFormat("0.00");
 
         // ==== LOGO ====
@@ -60,7 +67,7 @@ public class PdfGeneratorService {
 
         document.add(new Paragraph("\n──────────────────────────────────────────────\n"));
 
-        // ==== TABLA DETALLES ====
+        // ==== TABLA DE DETALLES ====
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100);
         table.setSpacingBefore(10f);
@@ -87,14 +94,15 @@ public class PdfGeneratorService {
 
         document.add(table);
 
-        // ==== TOTAL ====
+        // ==== TOTAL GENERAL ====
         Font totalFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, BaseColor.BLACK);
         Paragraph total = new Paragraph("TOTAL A PAGAR: S/ " + formatoMoneda.format(venta.getTotal()), totalFont);
         total.setAlignment(Element.ALIGN_RIGHT);
         document.add(total);
+
         document.add(new Paragraph("\n──────────────────────────────────────────────\n"));
 
-        // ==== PIE DE PÁGINA ====
+        // ==== PIE DE PÁGINA PROFESIONAL ====
         Font pieFont = new Font(Font.FontFamily.HELVETICA, 11, Font.ITALIC, BaseColor.GRAY);
         document.add(new Paragraph("Gracias por confiar en el Instituto de Educación Superior Tecnológico Público Huaycán.", pieFont));
         document.add(new Paragraph("Tu educación es nuestra prioridad.", pieFont));
@@ -105,8 +113,8 @@ public class PdfGeneratorService {
 
         document.close();
 
-        System.out.println("✅ PDF generado en memoria correctamente");
-        return outputStream.toByteArray(); // Devuelve el PDF en bytes
+        System.out.println("✅ PDF generado profesionalmente: " + nombreArchivo);
+        return nombreArchivo;
     }
 }
 
