@@ -55,32 +55,33 @@ public class ProductoController {
     }
 
     // ✅ Subir imagen de producto (guarda bytes en la BD)
-    @PostMapping("/{id}/imagen")
-    public ResponseEntity<String> subirImagen(@PathVariable int id, @RequestParam("file") MultipartFile file) {
-        try {
-            Producto producto = productoService.buscarPorId(id);
-            if (producto == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            producto.setImagen(file.getBytes());
-            productoService.guardar(producto);
-            return ResponseEntity.ok("✅ Imagen subida correctamente");
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body("❌ Error al subir imagen: " + e.getMessage());
-        }
-    }
-
-    // ✅ Obtener imagen como Base64
-    @GetMapping("/{id}/imagen")
-    public ResponseEntity<Map<String, Object>> obtenerImagen(@PathVariable int id) {
+    // ✅ Subir imagen en binario
+@PostMapping("/{id}/imagen")
+public ResponseEntity<String> subirImagen(@PathVariable int id, @RequestParam("file") MultipartFile file) {
+    try {
         Producto producto = productoService.buscarPorId(id);
-        if (producto == null || producto.getImagen() == null) {
-            return ResponseEntity.notFound().build();
-        }
-        String base64 = Base64.getEncoder().encodeToString(producto.getImagen());
-        return ResponseEntity.ok(Map.of("imagen", base64));
+        if (producto == null) return ResponseEntity.notFound().build();
+
+        producto.setImagen(file.getBytes());
+        productoService.guardar(producto);
+        return ResponseEntity.ok("✅ Imagen subida correctamente");
+    } catch (IOException e) {
+        return ResponseEntity.internalServerError().body("❌ Error al subir imagen: " + e.getMessage());
     }
+}
+
+// ✅ Obtener imagen en Base64 (para el frontend)
+@GetMapping("/{id}/imagen")
+public ResponseEntity<Map<String, Object>> obtenerImagen(@PathVariable int id) {
+    Producto producto = productoService.buscarPorId(id);
+    if (producto == null || producto.getImagen() == null) {
+        return ResponseEntity.notFound().build();
+    }
+
+    String base64 = Base64.getEncoder().encodeToString(producto.getImagen());
+    return ResponseEntity.ok(Map.of("imagen", base64));
+}
+
 
     // ✅ Actualizar producto
     @PutMapping("/{id}")
@@ -123,3 +124,4 @@ public class ProductoController {
         return ResponseEntity.ok(Map.of("ok", true));
     }
 }
+
