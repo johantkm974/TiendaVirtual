@@ -9,12 +9,11 @@ import java.util.List;
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, Integer> {
 
-    // ✅ Esta es la forma correcta de acceder a categoria.id en JPA
+    // ✅ Forma correcta de filtrar por el campo 'categoria.id'
     List<Producto> findByCategoria_Id(int id);
 
-    // 🔥 Consulta optimizada para evitar el problema N+1
+    // 🔥 Optimiza la consulta con JOIN FETCH para evitar el problema N+1
     @Query("SELECT p FROM Producto p JOIN FETCH p.categoria")
     List<Producto> findAllWithCategoria();
 }
-
 
