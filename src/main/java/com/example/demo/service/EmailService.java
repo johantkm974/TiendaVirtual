@@ -1,53 +1,57 @@
-package com.example.demo.service;
+import io.mailtrap.client.MailtrapClient;
+import io.mailtrap.config.MailtrapConfig;
+import io.mailtrap.factory.MailtrapClientFactory;
+import io.mailtrap.model.request.emails.Address;
+import io.mailtrap.model.request.emails.MailtrapMail;
+import io.mailtrap.model.request.emails.Attachment;
 
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.HttpEntity;
-
+import java.util.List;
 import java.util.Base64;
-import java.util.Map;
 
-@Service
-public class EmailService {
+public class MailtrapJavaSDKTest {
 
-    private final String API_URL = "https://sandbox.api.mailtrap.io/api/send/4141264";
-    private final String API_TOKEN = "fdc7b7f494d9b5704864afdb47ebf71c"; // tu token Mailtrap
+    private static final String TOKEN = "fdc7b7f494d9b5704864afdb47ebf71c";
 
-    public void enviarCorreoConAdjunto(String destinatario, String asunto, String contenidoHtml, byte[] pdfBytes, String nombreArchivo) {
+    public static void main(String[] args) {
+
+        // Configuración del cliente
+        final MailtrapConfig config = new MailtrapConfig.Builder()
+            .token(TOKEN)
+            .build();
+
+        final MailtrapClient client = MailtrapClientFactory.createMailtrapClient(config);
+
+        // PDF en Base64
+        byte[] pdfBytes = "Tu PDF en bytes aquí".getBytes(); // reemplaza por tu PDF real
+        String pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes);
+
+        // Creación del correo
+        final MailtrapMail mail = MailtrapMail.builder()
+            .from(new Address("hello@demomailtrap.co", "Mailtrap Test"))
+            .to(List.of(new Address("johanvasqez20@gmail.com")))
+            .subject("Factura de Compra")
+            .text("Adjunto tu PDF de compra")
+            .html("<h1>Adjunto tu PDF de compra</h1>")
+            .attachments(List.of(
+                Attachment.builder()
+                    .filename("factura.pdf")
+                    .content(pdfBase64)
+                    .type("application/pdf")
+                    .build()
+            ))
+            .category("Integration Test")
+            .build();
+
+        // Envío
         try {
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(API_TOKEN);
-
-            String pdfBase64 = pdfBytes != null ? Base64.getEncoder().encodeToString(pdfBytes) : null;
-
-            Map<String, Object> body = Map.of(
-                    "from", Map.of("email", "hello@example.com", "name", "Mailtrap Test"),
-                    "to", new Map[]{ Map.of("email", destinatario) },
-                    "subject", asunto,
-                    "text", contenidoHtml,
-                    "html", contenidoHtml,
-                    "attachments", pdfBase64 != null ? new Map[]{ Map.of(
-                            "content", pdfBase64,
-                            "filename", nombreArchivo,
-                            "type", "application/pdf"
-                    )} : null
-            );
-
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-            restTemplate.postForObject(API_URL, request, String.class);
-
-            System.out.println("✅ Correo enviado exitosamente a " + destinatario);
-
+            System.out.println(client.send(mail));
+            System.out.println("✅ Correo enviado correctamente con PDF adjunto!");
         } catch (Exception e) {
             System.err.println("❌ Error al enviar correo: " + e.getMessage());
             e.printStackTrace();
         }
     }
 }
+
 
 
