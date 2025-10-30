@@ -341,15 +341,30 @@ function attachComprarListeners() {
 }
 
 /* Filtrar por categoria (desde dropdown) */
-function filtrarPorCategoria(categoria) {
+async function filtrarPorCategoria(categoria) {
   if (!categoria || categoria === 'Todas') {
-    listarProductosPorCategoria();
+    await listarProductos(); // carga todo
     return;
   }
-  const contenedor = contenedorPrincipal;
-  contenedor.innerHTML = `<h2>${escapeHtml(categoria)}</h2>` + crearGridHTML(productosGlobales.filter(p => (p.categoria || 'Otros') === categoria), categoria);
-  attachComprarListeners();
+
+  try {
+    // 🔹 Llamada al backend por categoría
+    const catObj = productosGlobales.find(p => p.categoria === categoria);
+    const id = catObj ? catObj._original.categoria?.id || 1 : 1; // fallback
+    const res = await fetch(`https://tiendavirtual-production-88d4.up.railway.app/api/productos/categoria/${id}`);
+    if (!res.ok) throw new Error('No se pudieron cargar los productos de esta categoría');
+    const data = await res.json();
+    const productos = Array.isArray(data) ? data.map(procesarProducto) : [];
+
+    contenedorPrincipal.innerHTML = `<h2>${escapeHtml(categoria)}</h2>` + crearGridHTML(productos, categoria);
+    attachComprarListeners();
+
+  } catch (err) {
+    console.error(err);
+    contenedorPrincipal.innerHTML = `<p style="text-align:center;color:#666;padding:30px;">No se pudieron cargar los productos de la categoría ${categoria}.</p>`;
+  }
 }
+
 
 /* ==================== CARRITO (STATE + UI) ==================== */
 function guardarCarrito() {
@@ -678,3 +693,4 @@ window.cambiarCantidad = cambiarCantidad;
 window.vaciarCarrito = vaciarCarrito;
 window.procesarPagoPayPal = procesarPagoPayPal;
 window.procesarPagoSimulado = procesarPagoSimulado;
+
