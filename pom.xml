@@ -116,7 +116,7 @@
 				</executions>
 			</plugin>
 			
-			<!-- ✅ Plugin para compilar con Java 21 -->
+			<!-- ✅ Plugin para compi con Java 21 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
