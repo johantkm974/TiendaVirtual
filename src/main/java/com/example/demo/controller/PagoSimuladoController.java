@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/pago-simulado")
-@CrossOrigin(origins = "*")
+
 public class PagoSimuladoController {
 
     private final VentaService ventaService;
@@ -95,4 +95,5 @@ public class PagoSimuladoController {
                     .body("<h3>Error al procesar el pago simulado: " + e.getMessage() + "</h3>");
         }
     }
+
 }
