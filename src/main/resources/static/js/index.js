@@ -576,7 +576,7 @@ async function procesarPagoSimulado() {
   try {
     const total = carrito.reduce((s,i) => s + (Number(i.precio) * Number(i.cantidad)), 0);
 
-    const ventaRes = await fetch('http://localhost:8080/api/ventas', {
+    const ventaRes = await fetch('/api/ventas', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -679,4 +679,5 @@ window.cambiarCantidad = cambiarCantidad;
 window.vaciarCarrito = vaciarCarrito;
 window.procesarPagoPayPal = procesarPagoPayPal;
 window.procesarPagoSimulado = procesarPagoSimulado;
+
 
