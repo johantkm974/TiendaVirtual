@@ -17,7 +17,7 @@ import com.example.demo.service.CategoriaService;
 
 @RestController
 @RequestMapping("/api/categorias")
-@CrossOrigin(origins = "*")
+
 public class CategoriaController {
     private final CategoriaService categoriaService;
 
@@ -46,3 +46,4 @@ public class CategoriaController {
     }
 
 }
+
