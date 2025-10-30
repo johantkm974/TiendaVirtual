@@ -15,7 +15,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/paypal")
-
 public class PayPalController {
 
     private final PayPalService payPalService;
@@ -56,12 +55,11 @@ public class PayPalController {
             // Guardar el ID del pago en la venta si existe
             if (ventaId != null) {
                 Optional<Venta> ventaOpt = ventaService.findById(ventaId);
-                if (ventaOpt.isPresent()) {
-                    Venta venta = ventaOpt.get();
+                ventaOpt.ifPresent(venta -> {
                     venta.setPaymentId(payment.getId());
                     venta.setEstadoPago("PENDIENTE");
                     ventaService.save(venta);
-                }
+                });
             }
 
             Map<String, String> response = new HashMap<>();
@@ -81,149 +79,103 @@ public class PayPalController {
         }
     }
 
-    // 🔹 CONFIRMAR PAGO EXITOSO (Genera PDF + Envía correo)
+    // 🔹 CONFIRMAR PAGO EXITOSO (PDF en memoria + correo)
     @GetMapping("/success")
-public ResponseEntity<String> paymentSuccess(
-        @RequestParam("paymentId") String paymentId,
-        @RequestParam("PayerID") String payerId) {
+    public ResponseEntity<String> paymentSuccess(
+            @RequestParam("paymentId") String paymentId,
+            @RequestParam("PayerID") String payerId) {
 
-    try {
-        // Ejecutar pago en PayPal
-        Payment payment = payPalService.executePayment(paymentId, payerId);
+        try {
+            // Ejecutar pago en PayPal
+            Payment payment = payPalService.executePayment(paymentId, payerId);
 
-        if ("approved".equals(payment.getState())) {
-            Optional<Venta> ventaOpt = ventaService.findByPaymentId(paymentId);
-            if (ventaOpt.isPresent()) {
-                Venta venta = ventaOpt.get();
-                venta.setEstadoPago("APROBADO");
-                venta.setPaypalPayerId(payerId);
-                ventaService.save(venta);
+            if ("approved".equals(payment.getState())) {
+                Optional<Venta> ventaOpt = ventaService.findByPaymentId(paymentId);
+                if (ventaOpt.isPresent()) {
+                    Venta venta = ventaOpt.get();
+                    venta.setEstadoPago("APROBADO");
+                    venta.setPaypalPayerId(payerId);
+                    ventaService.save(venta);
 
-                // ✅ Generar PDF
-                System.out.println("🧾 Generando PDF...");
-                String pdfPath = pdfService.generarReciboPDF(venta);
-                System.out.println("📄 PDF generado en: " + pdfPath);
+                    // ✅ Generar PDF en memoria
+                    byte[] pdfBytes = pdfService.generarReciboPDF(venta);
 
-                // ✅ Enviar correo con el PDF adjunto
-                if (venta.getUsuario() != null && venta.getUsuario().getCorreo() != null) {
-                    String correo = venta.getUsuario().getCorreo();
-                    emailService.enviarCorreoConAdjunto(
-                            correo,
-                            "Recibo de tu compra #" + venta.getId(),
-                            "<h2>¡Gracias por tu compra!</h2><p>Adjuntamos tu recibo en formato PDF.</p>",
-                            pdfPath
-                    );
-                    System.out.println("✅ Correo enviado correctamente a " + correo);
+                    // ✅ Enviar correo con PDF adjunto
+                    if (venta.getUsuario() != null && venta.getUsuario().getCorreo() != null) {
+                        emailService.enviarCorreoConAdjunto(
+                                venta.getUsuario().getCorreo(),
+                                "Recibo de tu compra #" + venta.getId(),
+                                "<h2>¡Gracias por tu compra!</h2><p>Adjuntamos tu recibo en PDF.</p>",
+                                pdfBytes,
+                                "recibo_venta_" + venta.getId() + ".pdf"
+                        );
+                    }
                 }
+
+                // ✅ Página de confirmación bonita
+                String html = """
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta http-equiv="refresh" content="5;url=/index.html">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Compra Exitosa</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                               background: linear-gradient(135deg, #f0f9ff, #cbebff);
+                               height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+                        .card { background: #fff; padding: 50px 70px; border-radius: 16px;
+                                box-shadow: 0 8px 20px rgba(0,0,0,0.15); text-align: center; animation: fadeIn 1.2s ease; }
+                        .checkmark { width: 80px; height: 80px; border-radius: 50%; display: inline-block;
+                                     border: 4px solid #4CAF50; position: relative; margin-bottom: 25px;
+                                     animation: pop 0.6s ease-out forwards; }
+                        .checkmark::after { content: ''; position: absolute; left: 22px; top: 10px;
+                                            width: 20px; height: 40px; border-right: 5px solid #4CAF50;
+                                            border-bottom: 5px solid #4CAF50; transform: rotate(45deg); opacity: 0;
+                                            animation: draw 0.6s 0.5s forwards ease-out; }
+                        h1 { color: #333; margin-bottom: 10px; }
+                        p { color: #555; font-size: 1.1em; }
+                        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+                        @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+                        @keyframes draw { to { opacity: 1; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="card">
+                        <div class="checkmark"></div>
+                        <h1>¡Compra Exitosa! 🎉</h1>
+                        <p>Tu pago fue procesado correctamente.</p>
+                        <p>Se envió tu recibo PDF al correo registrado.</p>
+                        <p style="margin-top:20px; color:#888;">Serás redirigido al inicio en unos segundos...</p>
+                    </div>
+                </body>
+                </html>
+                """;
+
+                return ResponseEntity.ok().body(html);
             }
 
-            // ✅ Página de confirmación bonita
-            String html = """
-            <!DOCTYPE html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <meta http-equiv="refresh" content="5;url=/index.html">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Compra Exitosa</title>
-                <style>
-                    body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        background: linear-gradient(135deg, #f0f9ff, #cbebff);
-                        height: 100vh;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        margin: 0;
-                    }
-                    .card {
-                        background: #fff;
-                        padding: 50px 70px;
-                        border-radius: 16px;
-                        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-                        text-align: center;
-                        animation: fadeIn 1.2s ease;
-                    }
-                    .checkmark {
-                        width: 80px;
-                        height: 80px;
-                        border-radius: 50%;
-                        display: inline-block;
-                        border: 4px solid #4CAF50;
-                        position: relative;
-                        margin-bottom: 25px;
-                        animation: pop 0.6s ease-out forwards;
-                    }
-                    .checkmark::after {
-                        content: '';
-                        position: absolute;
-                        left: 22px;
-                        top: 10px;
-                        width: 20px;
-                        height: 40px;
-                        border-right: 5px solid #4CAF50;
-                        border-bottom: 5px solid #4CAF50;
-                        transform: rotate(45deg);
-                        opacity: 0;
-                        animation: draw 0.6s 0.5s forwards ease-out;
-                    }
-                    h1 {
-                        color: #333;
-                        margin-bottom: 10px;
-                    }
-                    p {
-                        color: #555;
-                        font-size: 1.1em;
-                    }
-                    @keyframes fadeIn {
-                        from { opacity: 0; transform: translateY(20px); }
-                        to { opacity: 1; transform: translateY(0); }
-                    }
-                    @keyframes pop {
-                        0% { transform: scale(0.5); opacity: 0; }
-                        100% { transform: scale(1); opacity: 1; }
-                    }
-                    @keyframes draw {
-                        to { opacity: 1; }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="card">
-                    <div class="checkmark"></div>
-                    <h1>¡Compra Exitosa! 🎉</h1>
-                    <p>Tu pago fue procesado correctamente.</p>
-                    <p>Se envió tu recibo PDF al correo electrónico registrado.</p>
-                    <p style="margin-top:20px; color:#888;">Serás redirigido al inicio en unos segundos...</p>
-                </div>
-            </body>
-            </html>
-            """;
+            // ❌ Pago no aprobado
+            return ResponseEntity.badRequest()
+                    .body("<h2>El pago no fue aprobado</h2><p>Por favor, intenta nuevamente.</p>");
 
-            return ResponseEntity.ok().body(html);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("<h3>Error procesando el pago: " + e.getMessage() + "</h3>");
         }
-
-        // ❌ Si el pago no fue aprobado
-        return ResponseEntity.badRequest()
-                .body("<h2>El pago no fue aprobado</h2><p>Por favor, intenta nuevamente.</p>");
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("<h3>Error procesando el pago: " + e.getMessage() + "</h3>");
     }
-}
 
     // 🔹 CANCELAR PAGO
     @GetMapping("/cancel")
     public ResponseEntity<?> paymentCancel(@RequestParam("paymentId") String paymentId) {
         try {
             Optional<Venta> ventaOpt = ventaService.findByPaymentId(paymentId);
-            if (ventaOpt.isPresent()) {
-                Venta venta = ventaOpt.get();
+            ventaOpt.ifPresent(venta -> {
                 venta.setEstadoPago("CANCELADO");
                 ventaService.save(venta);
-            }
+            });
 
             Map<String, Object> response = new HashMap<>();
             response.put("status", "CANCELLED");
@@ -237,5 +189,6 @@ public ResponseEntity<String> paymentSuccess(
                     .body(Map.of("status", "ERROR", "message", e.getMessage()));
         }
     }
-
 }
+
+
