@@ -16,7 +16,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/productos")
-@CrossOrigin(origins = "*")
+
 public class ProductoController {
 
     private final ProductoService productoService;
@@ -132,4 +132,5 @@ public class ProductoController {
             throw new RuntimeException("Error al subir la imagen: " + e.getMessage());
         }
     }
+
 }
