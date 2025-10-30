@@ -1,14 +1,13 @@
 package com.example.demo.repository;
 
-import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import com.example.demo.model.Producto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.List;
 
+@Repository
 public interface ProductoRepository extends JpaRepository<Producto, Integer> {
-    List<Producto> findByCategoriaId(int categoriaId);
 
-    // 🔥 Consulta optimizada (evita N+1 queries)
-    @Query("SELECT p FROM Producto p JOIN FETCH p.categoria")
-    List<Producto> findAllWithCategoria();
+    // ✅ Forma correcta para acceder a categoria.id
+    List<Producto> findByCategoria_Id(int id);
 }
