@@ -22,7 +22,6 @@ spanNombre.textContent = `Hola, ${usuario.nombre}`;
 spanNombre.style.marginRight = '10px';
 headerActions.appendChild(spanNombre);
 
-// Botón admin
 if (usuario.rol && usuario.rol.nombre === 'Administrador') {
   const btnAdmin = document.createElement('button');
   btnAdmin.textContent = '🛠 Administrador';
@@ -30,12 +29,10 @@ if (usuario.rol && usuario.rol.nombre === 'Administrador') {
   btnAdmin.onclick = () => window.location.href = './productos.html';
   headerActions.appendChild(btnAdmin);
 
-  // Ocultar carrito si hay
   const carritoDiv = document.querySelector('.carrito');
   if (carritoDiv) carritoDiv.style.display = 'none';
 }
 
-// Botón cerrar sesión
 const btnLogout = document.createElement('button');
 btnLogout.textContent = 'Cerrar sesión';
 btnLogout.className = 'btn-logout';
@@ -64,46 +61,41 @@ btnAgregar.addEventListener("click", () => {
 cerrarModal.addEventListener("click", () => modal.style.display = "none");
 
 // ===== Cargar categorías =====
-async function cargarCategorias() {
-  try {
-    const res = await fetch(CATEGORIAS_URL);
-    const categorias = await res.json();
+function cargarCategorias() {
+  fetch(CATEGORIAS_URL)
+    .then(res => res.json())
+    .then(categorias => {
+      const selectForm = document.querySelector("select[name='categoria.id']");
+      selectForm.innerHTML = `<option value="">-- Selecciona una categoría --</option>`;
+      filtroCategoria.innerHTML = `<option value="">Todas las categorías</option>`;
 
-    const selectForm = document.querySelector("select[name='categoria.id']");
-    const selectFiltro = document.getElementById("filtroCategoria");
-
-    selectForm.innerHTML = `<option value="">-- Selecciona una categoría --</option>`;
-    selectFiltro.innerHTML = `<option value="">Todas las categorías</option>`;
-
-    categorias.forEach(cat => {
-      selectForm.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
-      selectFiltro.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
-    });
-  } catch (err) {
-    mostrarMensaje("Error", "No se pudieron cargar las categorías", "error");
-  }
+      categorias.forEach(cat => {
+        selectForm.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+        filtroCategoria.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+      });
+    })
+    .catch(() => mostrarMensaje("Error", "No se pudieron cargar las categorías", "error"));
 }
 
-// ===== Listar productos =====
-async function listarProductos(categoriaId = "") {
-  try {
-    const res = await fetch(API_URL);
-    const data = await res.json();
+// ===== Listar productos (filtrado en frontend) =====
+function listarProductos(categoriaId = "") {
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+      // Filtrar por categoría en frontend si se seleccionó
+      if (categoriaId) {
+        data = data.filter(p => p.categoriaId == categoriaId);
+      }
 
-    // Aseguramos que sea un array
-    const productos = Array.isArray(data) ? data : data.productos || [];
-
-    tabla.innerHTML = "";
-    productos
-      .filter(p => !categoriaId || (p.categoria && p.categoria.id == categoriaId))
-      .forEach(p => {
+      tabla.innerHTML = "";
+      data.forEach(p => {
         tabla.innerHTML += `
           <tr>
             <td>${p.id}</td>
             <td>${p.nombre}</td>
-            <td>S/ ${parseFloat(p.precio).toFixed(2)}</td>
+            <td>S/ ${p.precio.toFixed(2)}</td>
             <td>${p.stock}</td>
-            <td>${p.categoria?.nombre || "Sin categoría"}</td>
+            <td>${p.categoria ? p.categoria.nombre : "Sin categoría"}</td>
             <td>${p.imagen_url ? `<img src="${p.imagen_url}" width="60" height="60">` : "Sin imagen"}</td>
             <td>
               <button class="btn-editar" onclick="editar(${p.id})">✏️ Editar</button>
@@ -111,10 +103,8 @@ async function listarProductos(categoriaId = "") {
             </td>
           </tr>`;
       });
-  } catch (err) {
-    console.error("Error al listar productos:", err);
-    mostrarMensaje("Error", "No se pudieron cargar los productos", "error");
-  }
+    })
+    .catch(err => console.error("Error al listar productos:", err));
 }
 
 filtroCategoria.addEventListener("change", e => listarProductos(e.target.value));
@@ -149,12 +139,12 @@ form.addEventListener("submit", async e => {
   const method = id ? "PUT" : "POST";
   const url = id ? `${API_URL}/${id}` : API_URL;
 
-  try {
-    await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(producto)
-    });
+  fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(producto)
+  })
+  .then(() => {
     modal.style.display = "none";
     listarProductos();
     mostrarMensaje(
@@ -162,38 +152,33 @@ form.addEventListener("submit", async e => {
       id ? "El producto se actualizó correctamente ✅" : "El producto fue guardado exitosamente 🛒",
       "success"
     );
-  } catch {
-    mostrarMensaje("Error", "No se pudo guardar el producto", "error");
-  }
+  })
+  .catch(() => mostrarMensaje("Error", "No se pudo guardar el producto", "error"));
 });
 
 // ===== Editar producto =====
 async function editar(id) {
-  try {
-    const res = await fetch(`${API_URL}/${id}`);
-    const p = await res.json();
+  const res = await fetch(`${API_URL}/${id}`);
+  const p = await res.json();
 
-    modal.style.display = "flex";
-    document.getElementById("tituloModal").textContent = "Editar Producto";
-    document.getElementById("id").value = p.id;
-    document.getElementById("nombre").value = p.nombre;
-    document.getElementById("descripcion").value = p.descripcion || "";
-    document.getElementById("precio").value = p.precio;
-    document.getElementById("stock").value = p.stock;
-    document.querySelector("select[name='categoria.id']").value = p.categoria?.id || "";
-    document.getElementById("imagenActual").value = p.imagen_url || "";
+  modal.style.display = "flex";
+  document.getElementById("tituloModal").textContent = "Editar Producto";
+  document.getElementById("id").value = p.id;
+  document.getElementById("nombre").value = p.nombre;
+  document.getElementById("descripcion").value = p.descripcion || "";
+  document.getElementById("precio").value = p.precio;
+  document.getElementById("stock").value = p.stock;
+  document.querySelector("select[name='categoria.id']").value = p.categoria?.id || "";
+  document.getElementById("imagenActual").value = p.imagen_url || "";
 
-    if (p.imagen_url) {
-      imagenPreview.src = `${p.imagen_url}?t=${new Date().getTime()}`;
-      imagenPreview.style.display = "block";
-    } else {
-      imagenPreview.style.display = "none";
-    }
-
-    document.getElementById("imagen").value = "";
-  } catch {
-    mostrarMensaje("Error", "No se pudo cargar el producto", "error");
+  if (p.imagen_url) {
+    imagenPreview.src = `${p.imagen_url}?t=${new Date().getTime()}`;
+    imagenPreview.style.display = "block";
+  } else {
+    imagenPreview.style.display = "none";
   }
+
+  document.getElementById("imagen").value = "";
 }
 
 // ===== Eliminar producto =====
@@ -250,4 +235,3 @@ window.addEventListener("load", () => {
   loader.classList.add("oculto");
   setTimeout(() => loader.style.display = "none", 500);
 });
-
