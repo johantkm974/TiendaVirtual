@@ -1,5 +1,5 @@
-const API_URL = "https://tiendavirtual-production-88d4.up.railway.app/productos";
-const CATEGORIAS_URL = "https://tiendavirtual-production-88d4.up.railway.app/api/categorias";
+const API_URL = "/api/productos";
+const CATEGORIAS_URL = "/api/categorias";
 
 const tabla = document.querySelector("#tablaProductos tbody");
 const modal = document.getElementById("modalProducto");
@@ -250,3 +250,4 @@ window.addEventListener("load", () => {
   loader.classList.add("oculto");
   setTimeout(() => loader.style.display = "none", 500);
 });
+
