@@ -3,8 +3,8 @@
  * CORREGIDO - Mantiene compatibilidad con tu backend y todas las funcionalidades de pago
  */
 
-const API_URL = "http://localhost:8080/api/productos";
-const API_CATEGORIAS = "http://localhost:8080/api/categorias";
+const API_URL = "https://tiendavirtual-production-88d4.up.railway.app/api/productos";
+const API_CATEGORIAS = "https://tiendavirtual-production-88d4.up.railway.app/api/categorias";
 const contenedorPrincipal = document.getElementById("mainProductos");
 
 // Estado
@@ -677,4 +677,5 @@ window.eliminarDelCarrito = eliminarDelCarrito;
 window.cambiarCantidad = cambiarCantidad;
 window.vaciarCarrito = vaciarCarrito;
 window.procesarPagoPayPal = procesarPagoPayPal;
+
 window.procesarPagoSimulado = procesarPagoSimulado;
