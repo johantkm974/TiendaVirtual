@@ -13,24 +13,18 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class PdfGeneratorService {
 
-    // ✅ Crear carpeta en una ruta absoluta
-    String carpeta = System.getProperty("user.dir") + "/recibos_pdf";
-    File directorio = new File(carpeta);
-    if (!directorio.exists()) {
-        boolean creada = directorio.mkdirs();
-        if (!creada) {
-            throw new RuntimeException("❌ No se pudo crear la carpeta para guardar los recibos PDF");
-        }
-    }
+    public byte[] generarReciboPDF(Venta venta) throws Exception {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-    String nombreArchivo = carpeta + "/recibo_venta_" + venta.getId() + ".pdf";
-    Document document = new Document(PageSize.A4, 50, 50, 70, 50);
-    PdfWriter.getInstance(document, new FileOutputStream(nombreArchivo));
-    document.open();
+        Document document = new Document(PageSize.A4, 50, 50, 70, 50);
+        PdfWriter.getInstance(document, outputStream);
+        document.open();
+
+        DecimalFormat formatoMoneda = new DecimalFormat("0.00");
 
         // ==== LOGO ====
         try {
-            Image logo = Image.getInstance(getClass().getResource("/static/img/logo.png"));
+            Image logo = Image.getInstance("src/main/resources/static/img/logo.png");
             logo.scaleToFit(100, 70);
             logo.setAlignment(Element.ALIGN_CENTER);
             document.add(logo);
@@ -38,12 +32,21 @@ public class PdfGeneratorService {
             System.out.println("⚠ No se encontró el logo, continuando sin él...");
         }
 
+        // ==== ENCABEZADO ====
         Font tituloFont = new Font(Font.FontFamily.HELVETICA, 20, Font.BOLD, new BaseColor(11, 102, 35));
         Paragraph titulo = new Paragraph("RECIBO DE VENTA - TIENDA VIRTUAL", tituloFont);
         titulo.setAlignment(Element.ALIGN_CENTER);
         document.add(titulo);
         document.add(new Paragraph("\n"));
 
+        // ==== DATOS DE LA EMPRESA ====
+        Font empresaFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL, BaseColor.DARK_GRAY);
+        document.add(new Paragraph("📍 Dirección: Huaycán, Ate - Lima, Perú", empresaFont));
+        document.add(new Paragraph("📞 Teléfono: (01) 680 - 4484", empresaFont));
+        document.add(new Paragraph("✉ Correo: contacto@iestphuaycan.edu.pe", empresaFont));
+        document.add(new Paragraph("\n──────────────────────────────────────────────\n"));
+
+        // ==== DATOS DEL CLIENTE ====
         Font clienteFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL, BaseColor.BLACK);
         document.add(new Paragraph("👤 Cliente: " + venta.getUsuario().getNombre(), clienteFont));
         document.add(new Paragraph("📧 Correo: " + venta.getUsuario().getCorreo(), clienteFont));
@@ -57,10 +60,15 @@ public class PdfGeneratorService {
 
         document.add(new Paragraph("\n──────────────────────────────────────────────\n"));
 
+        // ==== TABLA DETALLES ====
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100);
+        table.setSpacingBefore(10f);
+        table.setSpacingAfter(10f);
+
         Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
         BaseColor headerColor = new BaseColor(11, 102, 35);
+
         String[] headers = {"Producto", "Cantidad", "Precio Unit.", "Subtotal"};
         for (String header : headers) {
             PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
@@ -76,15 +84,30 @@ public class PdfGeneratorService {
             table.addCell(new Phrase("S/ " + formatoMoneda.format(d.getPrecioUnitario()), celdaFont));
             table.addCell(new Phrase("S/ " + formatoMoneda.format(d.getSubtotal()), celdaFont));
         }
+
         document.add(table);
 
-        Font totalFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD);
+        // ==== TOTAL ====
+        Font totalFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, BaseColor.BLACK);
         Paragraph total = new Paragraph("TOTAL A PAGAR: S/ " + formatoMoneda.format(venta.getTotal()), totalFont);
         total.setAlignment(Element.ALIGN_RIGHT);
         document.add(total);
+        document.add(new Paragraph("\n──────────────────────────────────────────────\n"));
+
+        // ==== PIE DE PÁGINA ====
+        Font pieFont = new Font(Font.FontFamily.HELVETICA, 11, Font.ITALIC, BaseColor.GRAY);
+        document.add(new Paragraph("Gracias por confiar en el Instituto de Educación Superior Tecnológico Público Huaycán.", pieFont));
+        document.add(new Paragraph("Tu educación es nuestra prioridad.", pieFont));
+
+        document.add(new Paragraph("\n\nFirma Electrónica:", pieFont));
+        document.add(new Paragraph("__________________________", pieFont));
+        document.add(new Paragraph("Administrador Johan Vasquez", pieFont));
+
         document.close();
 
-        return baos.toByteArray();
+        System.out.println("✅ PDF generado en memoria correctamente");
+        return outputStream.toByteArray(); // Devuelve el PDF en bytes
     }
 }
+
 
