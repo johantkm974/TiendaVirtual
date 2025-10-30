@@ -10,8 +10,8 @@ import java.util.Base64;
 
 public class MailtrapJavaSDKTest {
 
-    private static final String API_URL = "https://sandbox.api.mailtrap.io/api/send/<INBOX_ID>";
-    private static final String TOKEN = "1761811556"; // tu token Sandbox API
+    private static final String TOKEN = "8991e0826ee07862f59a0e958ba73a0e";
+
     public static void main(String[] args) {
 
         // Configuración del cliente
