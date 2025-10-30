@@ -15,7 +15,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/paypal")
-@CrossOrigin(origins = "*")
+
 public class PayPalController {
 
     private final PayPalService payPalService;
@@ -237,4 +237,5 @@ public ResponseEntity<String> paymentSuccess(
                     .body(Map.of("status", "ERROR", "message", e.getMessage()));
         }
     }
+
 }
