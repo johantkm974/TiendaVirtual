@@ -1,58 +1,49 @@
-import io.mailtrap.client.MailtrapClient;
-import io.mailtrap.config.MailtrapConfig;
-import io.mailtrap.factory.MailtrapClientFactory;
-import io.mailtrap.model.request.emails.Address;
-import io.mailtrap.model.request.emails.MailtrapMail;
-import io.mailtrap.model.request.emails.Attachment;
+package com.example.demo.service;
 
-import java.util.List;
-import java.util.Base64;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
 
-public class MailtrapJavaSDKTest {
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import java.io.File;
 
-    private static final String TOKEN = "8991e0826ee07862f59a0e958ba73a0e";
+@Service
+public class EmailService {
 
-    public static void main(String[] args) {
+    @Autowired
+    private JavaMailSender mailSender;
 
-        // Configuración del cliente
-        final MailtrapConfig config = new MailtrapConfig.Builder()
-            .token(TOKEN)
-            .build();
-
-        final MailtrapClient client = MailtrapClientFactory.createMailtrapClient(config);
-
-        // PDF en Base64
-        byte[] pdfBytes = "Tu PDF en bytes aquí".getBytes(); // reemplaza por tu PDF real
-        String pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes);
-
-        // Creación del correo
-        final MailtrapMail mail = MailtrapMail.builder()
-            .from(new Address("hello@demomailtrap.co", "Mailtrap Test"))
-            .to(List.of(new Address("johanvasqez20@gmail.com")))
-            .subject("Factura de Compra")
-            .text("Adjunto tu PDF de compra")
-            .html("<h1>Adjunto tu PDF de compra</h1>")
-            .attachments(List.of(
-                Attachment.builder()
-                    .filename("factura.pdf")
-                    .content(pdfBase64)
-                    .type("application/pdf")
-                    .build()
-            ))
-            .category("Integration Test")
-            .build();
-
-        // Envío
+    /**
+     * Envía un correo con un archivo PDF adjunto (por ejemplo, el recibo de venta).
+     */
+    public void enviarCorreoConAdjunto(String destinatario, String asunto, String contenidoHtml, String rutaAdjunto) {
         try {
-            System.out.println(client.send(mail));
-            System.out.println("✅ Correo enviado correctamente con PDF adjunto!");
-        } catch (Exception e) {
-            System.err.println("❌ Error al enviar correo: " + e.getMessage());
+            MimeMessage mensaje = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
+
+            helper.setTo(destinatario);
+            helper.setSubject(asunto);
+            helper.setText(contenidoHtml, true); // Permite contenido HTML
+
+            if (rutaAdjunto != null) {
+                File archivo = new File(rutaAdjunto);
+                if (archivo.exists()) {
+                    FileSystemResource resource = new FileSystemResource(archivo);
+                    helper.addAttachment(resource.getFilename(), resource);
+                } else {
+                    System.err.println("⚠️ Archivo no encontrado: " + rutaAdjunto);
+                }
+            }
+
+            mailSender.send(mensaje);
+            System.out.println("✅ Correo enviado exitosamente a " + destinatario);
+
+        } catch (MessagingException e) {
+            System.err.println("❌ Error al enviar el correo: " + e.getMessage());
             e.printStackTrace();
         }
     }
 }
-
-
-
-
