@@ -13,13 +13,20 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class PdfGeneratorService {
 
-    public byte[] generarReciboPDF(Venta venta) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.A4, 50, 50, 70, 50);
-        PdfWriter.getInstance(document, baos);
-        document.open();
+    // ✅ Crear carpeta en una ruta absoluta
+    String carpeta = System.getProperty("user.dir") + "/recibos_pdf";
+    File directorio = new File(carpeta);
+    if (!directorio.exists()) {
+        boolean creada = directorio.mkdirs();
+        if (!creada) {
+            throw new RuntimeException("❌ No se pudo crear la carpeta para guardar los recibos PDF");
+        }
+    }
 
-        DecimalFormat formatoMoneda = new DecimalFormat("0.00");
+    String nombreArchivo = carpeta + "/recibo_venta_" + venta.getId() + ".pdf";
+    Document document = new Document(PageSize.A4, 50, 50, 70, 50);
+    PdfWriter.getInstance(document, new FileOutputStream(nombreArchivo));
+    document.open();
 
         // ==== LOGO ====
         try {
@@ -80,3 +87,4 @@ public class PdfGeneratorService {
         return baos.toByteArray();
     }
 }
+
