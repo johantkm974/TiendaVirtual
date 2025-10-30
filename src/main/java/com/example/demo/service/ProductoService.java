@@ -14,24 +14,30 @@ public class ProductoService {
         this.productoRepository = productoRepository;
     }
 
+    // ✅ Lista todos los productos con su categoría (join fetch)
     public List<Producto> listar() {
         return productoRepository.findAllWithCategoria();
     }
 
+    // ✅ Guarda o actualiza un producto
     public Producto guardar(Producto producto) {
         return productoRepository.save(producto);
     }
 
+    // ✅ Busca un producto por su ID
     public Producto buscarPorId(int id) {
         return productoRepository.findById(id).orElse(null);
     }
 
+    // ✅ Elimina un producto por su ID
     public void eliminar(int id) {
         productoRepository.deleteById(id);
     }
 
+    // ✅ Corrige el nombre del método para que coincida con el repositorio
     public List<Producto> listarPorCategoria(int categoriaId) {
-        return productoRepository.findByCategoriaId(categoriaId);
+        return productoRepository.findByCategoria_Id(categoriaId);
     }
 }
+
 
