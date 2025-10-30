@@ -1,5 +1,5 @@
-const API_URL = "http://localhost:8080/api/productos";
-const CATEGORIAS_URL = "http://localhost:8080/api/categorias";
+const API_URL = "https://tiendavirtual-production-88d4.up.railway.app/productos";
+const CATEGORIAS_URL = "https://tiendavirtual-production-88d4.up.railway.app/api/categorias";
 
 const tabla = document.querySelector("#tablaProductos tbody");
 const modal = document.getElementById("modalProducto");
@@ -237,4 +237,5 @@ window.addEventListener("load", () => {
   const loader = document.getElementById("loader");
   loader.classList.add("oculto"); // activa fade out
   setTimeout(() => loader.style.display = "none", 500); // luego lo quita del DOM
+
 });
