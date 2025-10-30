@@ -11,7 +11,7 @@ let todasLasVentas = [];
   const tabla = document.querySelector("#tablaUsuarios tbody");
   tabla.innerHTML = "";
   try {
-    const res = await fetch("http://localhost:8080/api/usuarios");
+    const res = await fetch("https://tiendavirtual-production-88d4.up.railway.app/api/usuarios");
     const usuarios = await res.json();
 
     usuarios.forEach(u => {
@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const paymentId = prompt("Ingrese el Payment ID (o deje vacío si no aplica):");
       if (paymentId === null) return;
       try {
-        const res = await fetch("http://localhost:8080/api/ventas/confirmar-pago", {
+        const res = await fetch("https://tiendavirtual-production-88d4.up.railway.app/api/ventas/confirmar-pago", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ paymentId: paymentId || "MANUAL", ventaId })
@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function eliminarVenta(id) {
       if (!confirm("¿Seguro que deseas eliminar esta venta?")) return;
       try {
-        const res = await fetch(`http://localhost:8080/api/ventas/${id}`, { method: "DELETE" });
+        const res = await fetch(`https://tiendavirtual-production-88d4.up.railway.app/api/ventas/${id}`, { method: "DELETE" });
         const data = await res.json();
         alert(data.message || data.error);
         cargarVentas();
@@ -142,6 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   
+
 
 
   
