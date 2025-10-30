@@ -94,11 +94,7 @@
 			<artifactId>sdk-java</artifactId>
 			<version>${mercadopago.version}</version>
 		</dependency>
-		<dependency>
-	    <groupId>io.mailtrap</groupId>
-	    <artifactId>mailtrap-java-sdk</artifactId>
-	    <version>1.0.0</version> <!-- Use the appropriate version -->
-		</dependency>
+
 	</dependencies>
 
 	<build>
