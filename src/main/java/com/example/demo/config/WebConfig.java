@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    // ✅ CORS: habilita acceso tanto desde Railway como desde localhost (para pruebas)
+    // ✅ CORS
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -28,19 +28,20 @@ public class WebConfig implements WebMvcConfigurer {
         };
     }
 
-    // ✅ Mapea las carpetas donde están las imágenes dentro del proyecto
+    // ✅ Recursos estáticos (productos y otras imágenes)
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 📁 Carpeta raíz de uploads (para usuarios, productos, etc.)
+        // Si subiste tus imágenes dentro de src/main/resources/static/uploads/
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/");
+                .addResourceLocations("classpath:/static/uploads/");
 
-        // 📁 Carpeta específica de productos
+        // Si están en TiendaVirtual/uploads/img/productos (fuera de resources)
         registry.addResourceHandler("/img/productos/**")
-                .addResourceLocations("file:uploads/img/productos/");
+                .addResourceLocations("classpath:/static/img/productos/");
 
-        // 📦 Carpeta estática dentro del jar (por si tienes íconos o assets en static/)
+        // Recurso por defecto para íconos
         registry.addResourceHandler("/img/**")
                 .addResourceLocations("classpath:/static/img/");
     }
 }
+
