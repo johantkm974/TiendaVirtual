@@ -26,7 +26,6 @@ public class PagoSimuladoController {
         this.emailService = emailService;
     }
 
-    // 🔹 Simula un pago y envía el recibo PDF por correo
     @PostMapping("/pagar")
     public ResponseEntity<String> pagarSimulado(@RequestParam Integer ventaId) {
         try {
@@ -41,16 +40,13 @@ public class PagoSimuladoController {
             venta.setPaymentId("SIMULATED_" + System.currentTimeMillis());
             ventaService.save(venta);
 
-            // ✅ Generar PDF en memoria
+            // Generar el PDF en memoria
             byte[] pdfBytes = pdfService.generarReciboPDF(venta);
 
-            // ✅ Enviar correo con el PDF adjunto
+            // Enviar el correo con el PDF adjunto
             if (venta.getUsuario() != null && venta.getUsuario().getCorreo() != null) {
-                String contenidoHtml = """
-                    <h2>¡Gracias por tu compra!</h2>
-                    <p>Adjuntamos tu recibo de venta en formato PDF.</p>
-                    <p>Esperamos verte nuevamente en nuestra tienda virtual.</p>
-                """;
+                String contenidoHtml = "<h2>¡Gracias por tu compra, " + venta.getUsuario().getNombre() + "!</h2>"
+                        + "<p>Adjuntamos tu recibo en formato PDF.</p>";
 
                 emailService.enviarCorreoConAdjunto(
                         venta.getUsuario().getCorreo(),
@@ -61,7 +57,7 @@ public class PagoSimuladoController {
                 );
             }
 
-            // ✅ HTML de confirmación
+            // Página de confirmación visual
             String html = """
             <!DOCTYPE html>
             <html lang="es">
@@ -71,32 +67,16 @@ public class PagoSimuladoController {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Pago Simulado Exitoso</title>
                 <style>
-                    body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        background: linear-gradient(135deg, #f0f9ff, #cbebff);
-                        height: 100vh; display: flex;
-                        align-items: center; justify-content: center;
-                        margin: 0;
-                    }
-                    .card {
-                        background: #fff;
-                        padding: 50px 70px;
-                        border-radius: 16px;
-                        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-                        text-align: center;
-                    }
-                    .checkmark {
-                        width: 80px; height: 80px; border-radius: 50%;
-                        display: inline-block; border: 4px solid #4CAF50;
-                        position: relative; margin-bottom: 25px;
-                    }
-                    .checkmark::after {
-                        content: ''; position: absolute; left: 22px; top: 10px;
-                        width: 20px; height: 40px;
-                        border-right: 5px solid #4CAF50;
-                        border-bottom: 5px solid #4CAF50;
-                        transform: rotate(45deg);
-                    }
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                           background: linear-gradient(135deg, #f0f9ff, #cbebff);
+                           height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+                    .card { background: #fff; padding: 50px 70px; border-radius: 16px;
+                            box-shadow: 0 8px 20px rgba(0,0,0,0.15); text-align: center; }
+                    .checkmark { width: 80px; height: 80px; border-radius: 50%; display: inline-block;
+                                 border: 4px solid #4CAF50; position: relative; margin-bottom: 25px; }
+                    .checkmark::after { content: ''; position: absolute; left: 22px; top: 10px;
+                                        width: 20px; height: 40px; border-right: 5px solid #4CAF50;
+                                        border-bottom: 5px solid #4CAF50; transform: rotate(45deg); }
                     h1 { color: #333; margin-bottom: 10px; }
                     p { color: #555; font-size: 1.1em; }
                 </style>
@@ -122,4 +102,5 @@ public class PagoSimuladoController {
         }
     }
 }
+
 
