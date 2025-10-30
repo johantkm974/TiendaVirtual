@@ -235,6 +235,7 @@ async function listarProductos() {
 }
 
 // 🔥 NUEVA FUNCIÓN: Procesar estructura del producto
+// 🔥 NUEVA VERSIÓN: Procesar producto con imagen desde la base de datos
 function procesarProducto(producto) {
   // Determinar categoría
   let categoriaNombre = 'Otros';
@@ -243,13 +244,17 @@ function procesarProducto(producto) {
   } else if (producto.categoria && producto.categoria.nombre) {
     categoriaNombre = producto.categoria.nombre;
   }
-  
-  // Determinar imagen
-  let imagenUrl = producto.imagenUrl || producto.imagen_url || '/img/no-image.png';
-  if (imagenUrl && !imagenUrl.startsWith('http') && !imagenUrl.startsWith('/')) {
-    imagenUrl = '/uploads/img/productos/' + imagenUrl;
+
+  // 🔥 Nueva forma de obtener imagen desde el backend
+  // si el producto tiene imagen guardada (no null), generamos la URL del endpoint
+  let imagenUrl;
+  if (producto.imagen) {
+    // Endpoint que devuelve directamente la imagen (Base64 o binaria)
+    imagenUrl = `https://tiendavirtual-production-88d4.up.railway.app/api/productos/${producto.id}/imagen`;
+  } else {
+    imagenUrl = '/img/no-image.png';
   }
-  
+
   return {
     id: producto.id,
     nombre: producto.nombre || 'Sin nombre',
@@ -258,10 +263,10 @@ function procesarProducto(producto) {
     stock: parseInt(producto.stock) || 0,
     imagen_url: imagenUrl,
     categoria: categoriaNombre,
-    // Mantener referencia original para compatibilidad
     _original: producto
   };
 }
+
 
 /* Agrupa y muestra productos por categoría */
 function listarProductosPorCategoria() {
@@ -679,4 +684,5 @@ window.vaciarCarrito = vaciarCarrito;
 window.procesarPagoPayPal = procesarPagoPayPal;
 
 window.procesarPagoSimulado = procesarPagoSimulado;
+
 
