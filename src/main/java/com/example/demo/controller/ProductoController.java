@@ -33,7 +33,7 @@ public class ProductoController {
     }
 
     // ✅ Listar por categoría
-    @GetMapping("/api/categoria/{id}")
+    @GetMapping("/categoria/{id}")
     public ResponseEntity<List<Producto>> listarPorCategoria(@PathVariable int id) {
         List<Producto> productos = productoService.listarPorCategoria(id);
         if (productos.isEmpty()) return ResponseEntity.noContent().build();
@@ -124,6 +124,7 @@ public ResponseEntity<Map<String, Object>> obtenerImagen(@PathVariable int id) {
         return ResponseEntity.ok(Map.of("ok", true));
     }
 }
+
 
 
 
