@@ -1,4 +1,4 @@
-const API_URL = "https://tiendavirtual-production-88d4.up.railway.app/productos";
+const API_URL = "https://tiendavirtual-production-88d4.up.railway.app/api/productos";
 const CATEGORIAS_URL = "https://tiendavirtual-production-88d4.up.railway.app/api/categorias";
 
 const tabla = document.querySelector("#tablaProductos tbody");
@@ -11,9 +11,7 @@ const filtroCategoria = document.getElementById("filtroCategoria");
 
 // ===== Estado usuario =====
 let usuario = JSON.parse(localStorage.getItem('usuario'));
-if (!usuario) {
-  window.location.href = './login.html';
-}
+if (!usuario) window.location.href = './login.html';
 
 // ===== Header usuario/admin =====
 const headerActions = document.getElementById('headerActions');
@@ -23,14 +21,13 @@ spanNombre.style.marginRight = '10px';
 headerActions.appendChild(spanNombre);
 
 // Botón admin
-if (usuario.rol && usuario.rol.nombre === 'Administrador') {
+if (usuario.rol?.nombre === 'Administrador') {
   const btnAdmin = document.createElement('button');
   btnAdmin.textContent = '🛠 Administrador';
   btnAdmin.className = 'btn-admin';
   btnAdmin.onclick = () => window.location.href = './productos.html';
   headerActions.appendChild(btnAdmin);
 
-  // Ocultar carrito si hay
   const carritoDiv = document.querySelector('.carrito');
   if (carritoDiv) carritoDiv.style.display = 'none';
 }
@@ -69,7 +66,7 @@ function cargarCategorias() {
     .then(res => res.json())
     .then(categorias => {
       const selectForm = document.querySelector("select[name='categoria.id']");
-      const selectFiltro = document.getElementById("filtroCategoria");
+      const selectFiltro = filtroCategoria;
 
       selectForm.innerHTML = `<option value="">-- Selecciona una categoría --</option>`;
       selectFiltro.innerHTML = `<option value="">Todas las categorías</option>`;
@@ -95,9 +92,9 @@ function listarProductos(categoriaId = "") {
           <tr>
             <td>${p.id}</td>
             <td>${p.nombre}</td>
-            <td>S/ ${p.precio.toFixed(2)}</td>
+            <td>S/ ${parseFloat(p.precio).toFixed(2)}</td>
             <td>${p.stock}</td>
-            <td>${p.categoria ? p.categoria.nombre : "Sin categoría"}</td>
+            <td>${p.categoria?.nombre || "Sin categoría"}</td>
             <td>${p.imagen_url ? `<img src="${p.imagen_url}" width="60" height="60">` : "Sin imagen"}</td>
             <td>
               <button class="btn-editar" onclick="editar(${p.id})">✏️ Editar</button>
@@ -146,16 +143,16 @@ form.addEventListener("submit", async e => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(producto)
   })
-  .then(() => {
-    modal.style.display = "none";
-    listarProductos();
-    mostrarMensaje(
-      id ? "Producto actualizado" : "Producto agregado",
-      id ? "El producto se actualizó correctamente ✅" : "El producto fue guardado exitosamente 🛒",
-      "success"
-    );
-  })
-  .catch(() => mostrarMensaje("Error", "No se pudo guardar el producto", "error"));
+    .then(() => {
+      modal.style.display = "none";
+      listarProductos();
+      mostrarMensaje(
+        id ? "Producto actualizado" : "Producto agregado",
+        id ? "El producto se actualizó correctamente ✅" : "El producto fue guardado exitosamente 🛒",
+        "success"
+      );
+    })
+    .catch(() => mostrarMensaje("Error", "No se pudo guardar el producto", "error"));
 });
 
 // ===== Editar producto =====
@@ -174,14 +171,12 @@ async function editar(id) {
   document.getElementById("imagenActual").value = p.imagen_url || "";
 
   if (p.imagen_url) {
-    // Añadimos un timestamp para evitar caché
     imagenPreview.src = `${p.imagen_url}?t=${new Date().getTime()}`;
     imagenPreview.style.display = "block";
   } else {
     imagenPreview.style.display = "none";
   }
 
-  // Limpiar input de file para que no quede seleccionado otro archivo
   document.getElementById("imagen").value = "";
 }
 
@@ -232,10 +227,12 @@ function mostrarMensaje(titulo, texto, icono = "success") {
     timerProgressBar: true
   });
 }
-// Espera a que todo el DOM y recursos estén cargados
+
+// Loader
 window.addEventListener("load", () => {
   const loader = document.getElementById("loader");
-  loader.classList.add("oculto"); // activa fade out
-  setTimeout(() => loader.style.display = "none", 500); // luego lo quita del DOM
-
+  loader.classList.add("oculto");
+  setTimeout(() => loader.style.display = "none", 500);
 });
+
+
