@@ -14,7 +14,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/ventas")
-@CrossOrigin(origins = "*")
+
 public class VentaController {
 
     private final VentaService ventaService;
@@ -210,6 +210,7 @@ public ResponseEntity<?> eliminarVenta(@PathVariable Integer id) {
                 .body(Map.of("error", "Error al eliminar venta: " + e.getMessage()));
     }
 }
+
 
 
 }
