@@ -526,7 +526,7 @@ async function procesarPagoPayPal() {
     const total = carrito.reduce((s,i) => s + (Number(i.precio) * Number(i.cantidad)), 0);
 
     // Crear venta en tu backend
-    const ventaRes = await fetch('http://localhost:8080/api/ventas', {
+    const ventaRes = await fetch('/api/ventas', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -540,7 +540,7 @@ async function procesarPagoPayPal() {
     const venta = await ventaRes.json();
 
     // Solicita creación de pago PayPal
-    const pagoRes = await fetch('http://localhost:8080/api/paypal/create-payment', {
+    const pagoRes = await fetch('/api/paypal/create-payment', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ amount: Number(total.toFixed(2)), description: `Compra - Orden #${venta.id}`, ventaId: venta.id })
@@ -592,7 +592,7 @@ async function procesarPagoSimulado() {
     // Simular delay
     await new Promise(r => setTimeout(r, 1500));
 
-    const pagoRes = await fetch(`http://localhost:8080/api/pago-simulado/pagar?ventaId=${venta.id}`, { method: 'POST' });
+    const pagoRes = await fetch(`/api/pago-simulado/pagar?ventaId=${venta.id}`, { method: 'POST' });
     if (!pagoRes.ok) throw new Error('Error al crear venta simulada');
 
     const html = await pagoRes.text();
@@ -679,3 +679,4 @@ window.cambiarCantidad = cambiarCantidad;
 window.vaciarCarrito = vaciarCarrito;
 window.procesarPagoPayPal = procesarPagoPayPal;
 window.procesarPagoSimulado = procesarPagoSimulado;
+
