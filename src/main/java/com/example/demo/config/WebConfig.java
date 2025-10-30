@@ -8,6 +8,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    
+    // 🔹 Permitir acceso CORS desde Railway y Localhost
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -38,5 +40,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/img/");
     }
 }
+
 
 
