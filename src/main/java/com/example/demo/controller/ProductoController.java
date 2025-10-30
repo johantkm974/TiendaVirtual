@@ -15,7 +15,7 @@ import java.util.Base64;
 
 @RestController
 @RequestMapping("/api/productos")
-@CrossOrigin(origins = "*")
+
 public class ProductoController {
 
     private final ProductoService productoService;
@@ -124,4 +124,5 @@ public ResponseEntity<Map<String, Object>> obtenerImagen(@PathVariable int id) {
         return ResponseEntity.ok(Map.of("ok", true));
     }
 }
+
 
