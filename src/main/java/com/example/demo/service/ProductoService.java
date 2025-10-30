@@ -1,7 +1,6 @@
 package com.example.demo.service;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
 import com.example.demo.model.Producto;
 import com.example.demo.repository.ProductoRepository;
@@ -34,5 +33,5 @@ public class ProductoService {
     public List<Producto> listarPorCategoria(int categoriaId) {
         return productoRepository.findByCategoriaId(categoriaId);
     }
-  
 }
+
