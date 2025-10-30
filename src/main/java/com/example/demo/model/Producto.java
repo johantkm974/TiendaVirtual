@@ -2,13 +2,14 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import java.util.*;
-import java.util.Base64;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "producto")
 public class Producto {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -18,9 +19,10 @@ public class Producto {
     private Double precio;
     private int stock;
 
-    // ✅ Imagen almacenada directamente en la base de datos
+    // ✅ Aquí está el campo correcto que usas en tu base
     @Lob
     @Column(name = "imagen", columnDefinition = "LONGBLOB")
+    @JsonIgnore // <---- EVITA el error 500 al listar productos
     private byte[] imagen;
 
     @ManyToOne
@@ -31,21 +33,7 @@ public class Producto {
     @JsonBackReference
     private List<DetalleVenta> detalles;
 
-    public Producto() {}
-
-    public Producto(int id, String nombre, String descripcion, Double precio, int stock,
-                    byte[] imagen, Categoria categoria, List<DetalleVenta> detalles) {
-        this.id = id;
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.precio = precio;
-        this.stock = stock;
-        this.imagen = imagen;
-        this.categoria = categoria;
-        this.detalles = detalles;
-    }
-
-    // Getters y Setters
+    // ====== Getters / Setters ======
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -70,15 +58,16 @@ public class Producto {
     public List<DetalleVenta> getDetalles() { return detalles; }
     public void setDetalles(List<DetalleVenta> detalles) { this.detalles = detalles; }
 
-    // 🔥 Nombre de la categoría en JSON
+    // Mostrar nombre de la categoría
     @JsonProperty("categoriaNombre")
     public String getCategoriaNombre() {
         return categoria != null ? categoria.getNombre() : "Otros";
     }
 
-    // 🔥 Imagen en Base64 para enviar al frontend
-    @JsonProperty("imagenBase64")
-    public String getImagenBase64() {
-        return imagen != null ? Base64.getEncoder().encodeToString(imagen) : null;
+    // Mostrar ID de categoría
+    @JsonProperty("categoriaId")
+    public Integer getCategoriaId() {
+        return categoria != null ? categoria.getId() : null;
     }
 }
+
