@@ -340,17 +340,19 @@ function bindContactoForm(){
     });
 }
 
-/* ==================== UTILS ==================== */
-function escapeHtml(text){ return text?text.toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])):''; }
-
-function mostrarMiniNotificacion(msg){
-    const notif=document.createElement('div');
-    notif.className='mini-notificacion';
-    notif.textContent=msg;
-    document.body.appendChild(notif);
-    setTimeout(()=>notif.remove(),2000);
+/* ==================== UTIL HELPERS ==================== */
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
 }
 
+function mostrarMiniNotificacion(msg, ms = 1500) {
+  const n = document.createElement('div');
+  n.style.cssText = 'position:fixed;right:18px;bottom:18px;background:#27ae60;color:white;padding:10px 14px;border-radius:10px;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,0.12)';
+  n.textContent = msg;
+  document.body.appendChild(n);
+  setTimeout(()=> n.remove(), ms);
+}
 
 /* ==================== Exports (global) ==================== */
 window.mostrarUsuario = mostrarUsuario;
@@ -361,9 +363,4 @@ window.eliminarDelCarrito = eliminarDelCarrito;
 window.cambiarCantidad = cambiarCantidad;
 window.vaciarCarrito = vaciarCarrito;
 window.procesarPagoPayPal = procesarPagoPayPal;
-
 window.procesarPagoSimulado = procesarPagoSimulado;
-
-
-
-
