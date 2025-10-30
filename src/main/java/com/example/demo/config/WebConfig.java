@@ -2,13 +2,13 @@ package com.example.demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    
     // 🔹 Permitir acceso CORS desde Railway y Localhost
     @Bean
     public WebMvcConfigurer corsConfigurer() {
@@ -29,7 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
         };
     }
 
-    @Override
+   @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 🔹 Mapea la carpeta "uploads" (donde se guardan las imágenes)
         registry.addResourceHandler("/uploads/**")
@@ -40,6 +40,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/img/");
     }
 }
+
+
 
 
 
