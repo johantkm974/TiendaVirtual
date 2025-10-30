@@ -9,7 +9,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebGlobalConfig implements WebMvcConfigurer {
 
-    // ✅ Configuración de CORS unificada
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -28,12 +27,10 @@ public class WebGlobalConfig implements WebMvcConfigurer {
         };
     }
 
-    // ✅ Configuración de recursos estáticos e imágenes
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:uploads/");
-
         registry.addResourceHandler("/img/**")
                 .addResourceLocations("classpath:/static/img/");
     }
