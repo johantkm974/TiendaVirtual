@@ -54,9 +54,9 @@ public class ProductoService {
         try {
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
                     "folder", "productos",
-                    "use_filename", true,
-                    "unique_filename", false,
-                    "overwrite", true
+                    "use_filename", false,
+                    "unique_filename", true,
+                    "overwrite", false
             ));
             return uploadResult.get("secure_url").toString();
         } catch (IOException e) {
@@ -64,4 +64,5 @@ public class ProductoService {
         }
     }
 }
+
 
