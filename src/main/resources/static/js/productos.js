@@ -239,9 +239,10 @@ function mostrarMensaje(titulo, texto, icono = "success") {
   });
 }
 
-// ===== Loader =====
+// ===== Loadera =====
 window.addEventListener("load", () => {
   const loader = document.getElementById("loader");
   loader.classList.add("oculto");
   setTimeout(() => loader.style.display = "none", 500);
 });
+
