@@ -13,7 +13,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/productos")
-@CrossOrigin(origins = "*")
+
 public class ProductoController {
 
     private final ProductoService productoService;
@@ -116,4 +116,5 @@ public class ProductoController {
         return productoService.subirImagenCloudinary(file);
     }
 }
+
 
