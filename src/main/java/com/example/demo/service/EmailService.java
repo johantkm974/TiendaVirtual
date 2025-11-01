@@ -18,4 +18,13 @@ public class EmailService {
         mensaje.setText("Gracias por tu compra.\n\nPuedes descargar tu recibo en el siguiente enlace:\n" + pdfUrl);
         mailSender.send(mensaje);
     }
+
+    // ✅ Método faltante para compatibilidad con controladores antiguos
+    public void enviarCorreoConAdjunto(String destinatario, String asunto, String cuerpo, String adjuntoUrl) {
+        SimpleMailMessage mensaje = new SimpleMailMessage();
+        mensaje.setTo(destinatario);
+        mensaje.setSubject(asunto);
+        mensaje.setText(cuerpo + "\n\nDescarga el archivo adjunto aquí: " + adjuntoUrl);
+        mailSender.send(mensaje);
+    }
 }
