@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
 btnAgregar.addEventListener("click", () => {
   form.reset();
   document.getElementById("id").value = "";
+  document.getElementById("imagenActual").value = "";
   imagenPreview.style.display = "none";
   document.getElementById("tituloModal").textContent = "Nuevo Producto";
   modal.style.display = "flex";
@@ -77,12 +78,11 @@ function cargarCategorias() {
     .catch(() => mostrarMensaje("Error", "No se pudieron cargar las categorías", "error"));
 }
 
-// ===== Listar productos (filtrado en frontend) =====
+// ===== Listar productos =====
 function listarProductos(categoriaId = "") {
   fetch(API_URL)
     .then(res => res.json())
     .then(data => {
-      // Filtrar por categoría en frontend si se seleccionó
       if (categoriaId) {
         data = data.filter(p => p.categoriaId == categoriaId);
       }
@@ -114,37 +114,44 @@ async function subirImagen(file) {
   const formData = new FormData();
   formData.append("file", file);
   const res = await fetch(`${API_URL}/subir-imagen`, { method: "POST", body: formData });
+  if (!res.ok) throw new Error("Error al subir la imagen");
   return await res.text();
 }
 
 // ===== Guardar / editar producto =====
 form.addEventListener("submit", async e => {
   e.preventDefault();
+
   const id = document.getElementById("id").value;
   const file = document.getElementById("imagen").files[0];
   const categoriaId = document.querySelector("select[name='categoria.id']").value;
   let imagenUrl = document.getElementById("imagenActual").value;
 
-  if (file) imagenUrl = await subirImagen(file);
+  try {
+    // Si hay un nuevo archivo, subimos y actualizamos URL
+    if (file) {
+      const uploadedPath = await subirImagen(file);
+      imagenUrl = uploadedPath.startsWith("/") ? uploadedPath : "/" + uploadedPath;
+    }
 
-  const producto = {
-    nombre: document.getElementById("nombre").value,
-    descripcion: document.getElementById("descripcion").value,
-    precio: parseFloat(document.getElementById("precio").value),
-    stock: parseInt(document.getElementById("stock").value),
-    imagen_url: imagenUrl,
-    categoria: categoriaId ? { id: parseInt(categoriaId) } : null
-  };
+    const producto = {
+      nombre: document.getElementById("nombre").value,
+      descripcion: document.getElementById("descripcion").value,
+      precio: parseFloat(document.getElementById("precio").value),
+      stock: parseInt(document.getElementById("stock").value),
+      imagen_url: imagenUrl,
+      categoria: categoriaId ? { id: parseInt(categoriaId) } : null
+    };
 
-  const method = id ? "PUT" : "POST";
-  const url = id ? `${API_URL}/${id}` : API_URL;
+    const method = id ? "PUT" : "POST";
+    const url = id ? `${API_URL}/${id}` : API_URL;
 
-  fetch(url, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(producto)
-  })
-  .then(() => {
+    await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(producto)
+    });
+
     modal.style.display = "none";
     listarProductos();
     mostrarMensaje(
@@ -152,8 +159,11 @@ form.addEventListener("submit", async e => {
       id ? "El producto se actualizó correctamente ✅" : "El producto fue guardado exitosamente 🛒",
       "success"
     );
-  })
-  .catch(() => mostrarMensaje("Error", "No se pudo guardar el producto", "error"));
+
+  } catch (error) {
+    console.error("Error al guardar producto:", error);
+    mostrarMensaje("Error", "No se pudo guardar el producto", "error");
+  }
 });
 
 // ===== Editar producto =====
