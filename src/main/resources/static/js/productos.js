@@ -130,10 +130,12 @@ form.addEventListener("submit", async e => {
 
   try {
     // Si hay un nuevo archivo, subimos y actualizamos URL
-    if (file) {
+     if (file) {
       const uploadedPath = await subirImagen(file);
-      imagenUrl = uploadedPath.startsWith("/") ? uploadedPath : "/" + uploadedPath;
+      // ✅ Eliminamos cualquier "/" al inicio por seguridad
+      imagenUrl = uploadedPath.replace(/^\/+/, "");
     }
+
 
     const producto = {
       nombre: document.getElementById("nombre").value,
@@ -246,5 +248,6 @@ window.addEventListener("load", () => {
   loader.classList.add("oculto");
   setTimeout(() => loader.style.display = "none", 500);
 });
+
 
 
