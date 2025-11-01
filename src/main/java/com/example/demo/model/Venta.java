@@ -3,7 +3,6 @@ package com.example.demo.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
@@ -24,7 +23,6 @@ public class Venta {
     private LocalDateTime fecha;
     private Double total;
 
-    // Campos para PayPal
     @Column(name = "payment_id")
     private String paymentId;
     
@@ -34,7 +32,6 @@ public class Venta {
     @Column(name = "paypal_payer_id")
     private String paypalPayerId;
 
-    // Relación con detalles
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<DetalleVenta> detalles;
@@ -44,7 +41,12 @@ public class Venta {
         this.estadoPago = "PENDIENTE";
     }
 
-    // Getters y Setters (generar con IDE)
+    // ✅ Alias para compatibilidad con getCliente()
+    public Usuario getCliente() {
+        return usuario;
+    }
+
+    // Getters y setters originales
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public Usuario getUsuario() { return usuario; }
