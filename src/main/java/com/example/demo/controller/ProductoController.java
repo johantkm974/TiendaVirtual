@@ -9,14 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/productos")
-
+@CrossOrigin(origins = "*")
 public class ProductoController {
 
     private final ProductoService productoService;
@@ -28,7 +25,6 @@ public class ProductoController {
     }
 
     // ✅ Listar todos los productos
-    // ✅ LISTAR TODOS LOS PRODUCTOS (OPTIMIZADO)
     @GetMapping
     public List<Producto> listarProductos() {
         return productoService.listar();
@@ -45,7 +41,6 @@ public class ProductoController {
     }
 
     // ✅ Obtener producto por ID
-    // ✅ OBTENER PRODUCTO POR ID
     @GetMapping("/{id}")
     public ResponseEntity<Producto> obtenerProducto(@PathVariable Integer id) {
         Producto producto = productoService.buscarPorId(id);
@@ -115,22 +110,10 @@ public class ProductoController {
         return ResponseEntity.ok(Map.of("ok", true));
     }
 
-    // ✅ Subir imagen de producto
+    // ✅ Subir imagen (ahora con Cloudinary)
     @PostMapping("/subir-imagen")
     public String subirImagen(@RequestParam("file") MultipartFile file) {
-        try {
-            String ruta = System.getProperty("user.dir") + "/uploads/img/productos";
-            File carpeta = new File(ruta);
-            if (!carpeta.exists()) carpeta.mkdirs();
-
-            String nombreArchivo = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path destino = Paths.get(ruta, nombreArchivo);
-            Files.copy(file.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
-
-            return "/uploads/img/productos/" + nombreArchivo;
-        } catch (IOException e) {
-            throw new RuntimeException("Error al subir la imagen: " + e.getMessage());
-        }
+        return productoService.subirImagenCloudinary(file);
     }
-
 }
+
