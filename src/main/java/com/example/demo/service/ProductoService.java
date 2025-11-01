@@ -18,16 +18,10 @@ public class ProductoService {
     private final ProductoRepository productoRepository;
     private final Cloudinary cloudinary;
 
-    public ProductoService(ProductoRepository productoRepository) {
+    // ✅ Inyectamos el bean de Cloudinary (viene desde CloudinaryConfig)
+    public ProductoService(ProductoRepository productoRepository, Cloudinary cloudinary) {
         this.productoRepository = productoRepository;
-
-        // ✅ Configuración segura: toma las credenciales de variables de entorno (Railway o local)
-        this.cloudinary = new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", System.getenv("CLOUDINARY_CLOUD_NAME"),
-                "api_key", System.getenv("CLOUDINARY_API_KEY"),
-                "api_secret", System.getenv("CLOUDINARY_API_SECRET"),
-                "secure", true
-        ));
+        this.cloudinary = cloudinary;
     }
 
     // ✅ Listar todos los productos con su categoría
@@ -55,7 +49,7 @@ public class ProductoService {
         return productoRepository.findByCategoriaId(categoriaId);
     }
 
-    // ✅ Subir imagen a Cloudinary
+    // ✅ Subir imagen a Cloudinary (usando credenciales de Railway)
     public String subirImagenCloudinary(MultipartFile file) {
         try {
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
@@ -70,5 +64,4 @@ public class ProductoService {
         }
     }
 }
-
 
