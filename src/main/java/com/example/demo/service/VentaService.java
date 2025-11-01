@@ -23,15 +23,23 @@ public class VentaService {
     private final UsuarioRepository usuarioRepository;
     private final MetodoPagoRepository metodoPagoRepository;
     private final ProductoRepository productoRepository;
+    private final PdfGeneratorService pdfGeneratorService;
+    private final EmailService emailService;
 
-    public VentaService(VentaRepository ventaRepository,
-                        UsuarioRepository usuarioRepository,
-                        MetodoPagoRepository metodoPagoRepository,
-                        ProductoRepository productoRepository) {
+    public VentaService(
+            VentaRepository ventaRepository,
+            UsuarioRepository usuarioRepository,
+            MetodoPagoRepository metodoPagoRepository,
+            ProductoRepository productoRepository,
+            PdfGeneratorService pdfGeneratorService,
+            EmailService emailService) {
+
         this.ventaRepository = ventaRepository;
         this.usuarioRepository = usuarioRepository;
         this.metodoPagoRepository = metodoPagoRepository;
         this.productoRepository = productoRepository;
+        this.pdfGeneratorService = pdfGeneratorService;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -69,9 +77,23 @@ public class VentaService {
         venta.setDetalles(detalles);
         venta.setTotal(total);
 
-        return ventaRepository.save(venta);
+        Venta ventaGuardada = ventaRepository.save(venta);
+
+        // ✅ Generar y enviar recibo PDF automáticamente
+        try {
+            String pdfUrl = pdfGeneratorService.generarReciboPDF(ventaGuardada);
+            if (usuario.getCorreo() != null && !usuario.getCorreo().isEmpty()) {
+                emailService.enviarReciboPorCorreo(usuario.getCorreo(), pdfUrl);
+            }
+            System.out.println("✅ Recibo generado y enviado: " + pdfUrl);
+        } catch (Exception e) {
+            System.err.println("⚠️ Error al generar o enviar el recibo: " + e.getMessage());
+        }
+
+        return ventaGuardada;
     }
 
+    // Métodos adicionales
     public Optional<Venta> findById(Integer id) {
         return ventaRepository.findById(id);
     }
@@ -91,6 +113,7 @@ public class VentaService {
     public List<Venta> findByUsuarioId(Integer usuarioId) {
         return ventaRepository.findByUsuarioId(usuarioId);
     }
+
     public boolean eliminarPorId(Integer id) {
         if (ventaRepository.existsById(id)) {
             ventaRepository.deleteById(id);
