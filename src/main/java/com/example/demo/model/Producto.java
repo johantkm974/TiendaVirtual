@@ -5,6 +5,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude;
 @Entity
 @Table(name = "producto")
 public class Producto {
@@ -16,6 +17,7 @@ public class Producto {
     private String descripcion;
     private Double precio;
     private int stock;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String imagen_url;
 
     @ManyToOne
@@ -124,4 +126,5 @@ public class Producto {
 
    
     
+
 }
