@@ -96,7 +96,8 @@ function listarProductos(categoriaId = "") {
             <td>S/ ${p.precio.toFixed(2)}</td>
             <td>${p.stock}</td>
             <td>${p.categoria ? p.categoria.nombre : "Sin categoría"}</td>
-            <td>${p.imagen_url ? `<img src="${p.imagen_url}" width="60" height="60">` : "Sin imagen"}</td>
+            <td>${p.imagen_url ? `<img src="${p.imagen_url.startsWith('http') ? p.imagen_url : API_URL.replace('/api/productos', '') + p.imagen_url}" width="60" height="60">`:"Sin imagen"}</td>
+
             <td>
               <button class="btn-editar" onclick="editar(${p.id})">✏️ Editar</button>
               <button class="btn-eliminar" onclick="eliminar(${p.id})">🗑️ Eliminar</button>
@@ -245,4 +246,5 @@ window.addEventListener("load", () => {
   loader.classList.add("oculto");
   setTimeout(() => loader.style.display = "none", 500);
 });
+
 
