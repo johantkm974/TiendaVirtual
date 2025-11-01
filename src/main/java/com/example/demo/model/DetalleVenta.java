@@ -1,7 +1,6 @@
 package com.example.demo.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.*;
 
 @Entity
@@ -39,11 +38,16 @@ public class DetalleVenta {
     public void setProducto(Producto producto) { this.producto = producto; }
 
     public Integer getCantidad() { return cantidad; }
-    public void setCantidad(Integer cantidad) { this.cantidad = cantidad; } // ✅ solo asigna
+    public void setCantidad(Integer cantidad) { this.cantidad = cantidad; }
 
     public Double getPrecioUnitario() { return precioUnitario; }
-    public void setPrecioUnitario(Double precioUnitario) { this.precioUnitario = precioUnitario; } // ✅ solo asigna
+    public void setPrecioUnitario(Double precioUnitario) { this.precioUnitario = precioUnitario; }
 
     public Double getSubtotal() { return subtotal; }
-    public void setSubtotal(Double subtotal) { this.subtotal = subtotal; } // ✅ solo asigna
+    public void setSubtotal(Double subtotal) { this.subtotal = subtotal; }
+
+    // ✅ Alias para compatibilidad con getPrecio()
+    public Double getPrecio() {
+        return this.precioUnitario;
+    }
 }
