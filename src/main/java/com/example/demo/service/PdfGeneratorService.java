@@ -24,16 +24,17 @@ public class PdfGeneratorService {
     private Cloudinary cloudinary;
 
     public String generarReciboPDF(Venta venta) throws Exception {
-        // 📁 Carpeta temporal (Railway solo permite /tmp)
+
+        // 📁 Carpeta temporal (en Railway o Linux usa /tmp)
         String carpeta = "/tmp";
         String nombreArchivo = carpeta + "/recibo_venta_" + venta.getId() + ".pdf";
 
-        // Crear documento
+        // 🧾 Crear documento PDF
         Document document = new Document();
         PdfWriter.getInstance(document, new FileOutputStream(nombreArchivo));
         document.open();
 
-        // 🧾 Encabezado
+        // Encabezado
         Font fontTitulo = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
         Paragraph titulo = new Paragraph("Recibo de Venta", fontTitulo);
         titulo.setAlignment(Element.ALIGN_CENTER);
@@ -43,7 +44,7 @@ public class PdfGeneratorService {
         document.add(new Paragraph("Cliente: " + venta.getCliente().getNombre()));
         document.add(new Paragraph(" "));
 
-        // 🧮 Tabla de productos
+        // Tabla de productos
         PdfPTable tabla = new PdfPTable(4);
         tabla.setWidthPercentage(100);
         tabla.setWidths(new float[]{4, 2, 2, 2});
@@ -67,24 +68,23 @@ public class PdfGeneratorService {
         document.add(new Paragraph("Total: S/ " + String.format("%.2f", venta.getTotal())));
         document.close();
 
+        // ☁️ Subir el PDF a Cloudinary (como archivo RAW)
         Map uploadResult = cloudinary.uploader().upload(
-    new File(nombreArchivo),
-    ObjectUtils.asMap(
-        "folder", "recibos",
-        "resource_type", "raw", // 👈 obligatorio para PDF
-        "format", "pdf",
-        "use_filename", true,
-        "unique_filename", true
-    )
-);
+            new File(nombreArchivo),
+            ObjectUtils.asMap(
+                "folder", "recibos",
+                "resource_type", "raw",   // ✅ obligatorio para PDF
+                "format", "pdf",
+                "use_filename", true,
+                "unique_filename", true
+            )
+        );
 
-String secureUrl = uploadResult.get("secure_url").toString();
-String pdfUrl = secureUrl.replace("/raw/upload/", "/raw/upload/fl_attachment/");
-return pdfUrl;
+        // 🔗 Generar URL directa con descarga
+        String secureUrl = uploadResult.get("secure_url").toString();
+        String pdfUrl = secureUrl.replace("/upload/", "/upload/fl_attachment/");
 
+        System.out.println("✅ PDF subido correctamente: " + pdfUrl);
+        return pdfUrl;
+    }
 }
-
-
-
-
-
