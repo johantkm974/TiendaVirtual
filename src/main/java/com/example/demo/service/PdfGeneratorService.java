@@ -67,33 +67,23 @@ public class PdfGeneratorService {
         document.add(new Paragraph("Total: S/ " + String.format("%.2f", venta.getTotal())));
         document.close();
 
-        // ☁️ Subir el PDF generado a Cloudinary
         Map uploadResult = cloudinary.uploader().upload(
-                new File(nombreArchivo),
-                ObjectUtils.asMap(
-                        "folder", "recibos",
-                        "resource_type", "auto", // ✅ para archivos PDF
-                        "format", "pdf", 
-                        "use_filename", true,
-                        "unique_filename", true
-                )
-        );
+    new File(nombreArchivo),
+    ObjectUtils.asMap(
+        "folder", "recibos",
+        "resource_type", "raw", // 👈 obligatorio para PDF
+        "format", "pdf",
+        "use_filename", true,
+        "unique_filename", true
+    )
+);
 
-       // 🧩 Cloudinary puede devolver /image/ o /raw/ según cómo lo detectó.
-// Este replace garantiza compatibilidad universal.
-    String secureUrl = uploadResult.get("secure_url").toString();
-    String pdfUrl;
-    
-    if (secureUrl.contains("/image/upload/")) {
-        pdfUrl = secureUrl.replace("/image/upload/", "/raw/upload/fl_attachment/");
-    } else if (secureUrl.contains("/raw/upload/")) {
-        pdfUrl = secureUrl.replace("/raw/upload/", "/raw/upload/fl_attachment/");
-    } else {
-        pdfUrl = secureUrl.replace("/upload/", "/raw/upload/fl_attachment/");
-    }
-        return pdfUrl;
-    }
+String secureUrl = uploadResult.get("secure_url").toString();
+String pdfUrl = secureUrl.replace("/raw/upload/", "/raw/upload/fl_attachment/");
+return pdfUrl;
+
 }
+
 
 
 
