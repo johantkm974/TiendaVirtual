@@ -80,7 +80,7 @@ public class VentaService {
         Venta ventaGuardada = ventaRepository.save(venta);
 
         // ✅ MANTENIENDO EXACTAMENTE LA MISMA LÓGICA DE ENVÍO DE CORREO
-         /*try {
+         try {
             String pdfUrl = pdfGeneratorService.generarReciboPDF(ventaGuardada);
             if (usuario.getCorreo() != null && !usuario.getCorreo().isEmpty()) {
                 emailService.enviarReciboPorCorreo(usuario.getCorreo(), pdfUrl);
@@ -90,7 +90,7 @@ public class VentaService {
             System.err.println("⚠️ Error al generar o enviar el recibo: " + e.getMessage());
             // Manteniendo el mismo manejo de errores - no interrumpe el flujo
         }
-         */
+         
 
         return ventaGuardada;
     }
@@ -124,5 +124,6 @@ public class VentaService {
         return false;
     }
 }
+
 
 
