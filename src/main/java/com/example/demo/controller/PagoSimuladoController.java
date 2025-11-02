@@ -43,17 +43,9 @@ public class PagoSimuladoController {
             ventaService.save(venta);
 
             // Generar PDF
-            String pdfPath = pdfService.generarReciboPDF(venta);
-
+          
             // Enviar correo
-            if (venta.getUsuario() != null && venta.getUsuario().getCorreo() != null) {
-                emailService.enviarCorreoConAdjunto(
-                        venta.getUsuario().getCorreo(),
-                        "Recibo de tu compra #" + venta.getId(),
-                        "<h2>¡Gracias por tu compra!</h2><p>Adjuntamos tu recibo en formato PDF.</p>",
-                        pdfPath
-                );
-            }
+       
 
             // Retornar página de confirmación bonita
             String html = """
@@ -97,3 +89,4 @@ public class PagoSimuladoController {
     }
 
 }
+
