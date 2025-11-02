@@ -79,11 +79,15 @@ public class PdfGeneratorService {
                 )
         );
 
-        String pdfUrl = uploadResult.get("secure_url").toString()
-        .replace("/upload/", "/upload/fl_attachment/");
-
-        return pdfUrl;
+       // 🧩 Cloudinary puede devolver /image/ o /raw/ según cómo lo detectó.
+// Este replace garantiza compatibilidad universal.
+    String pdfUrl = uploadResult.get("secure_url").toString()
+        .replace("/image/upload/", "/raw/upload/fl_attachment/")
+        .replace("/upload/", "/raw/upload/fl_attachment/");
+    
+    return pdfUrl;
     }
 }
+
 
 
