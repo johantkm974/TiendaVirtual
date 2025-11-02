@@ -79,7 +79,7 @@ public class VentaService {
 
         Venta ventaGuardada = ventaRepository.save(venta);
 
-        // ✅ Generar y enviar recibo PDF automáticamente
+        // ✅ MANTENIENDO EXACTAMENTE LA MISMA LÓGICA DE ENVÍO DE CORREO
         try {
             String pdfUrl = pdfGeneratorService.generarReciboPDF(ventaGuardada);
             if (usuario.getCorreo() != null && !usuario.getCorreo().isEmpty()) {
@@ -88,12 +88,13 @@ public class VentaService {
             System.out.println("✅ Recibo generado y enviado: " + pdfUrl);
         } catch (Exception e) {
             System.err.println("⚠️ Error al generar o enviar el recibo: " + e.getMessage());
+            // Manteniendo el mismo manejo de errores - no interrumpe el flujo
         }
 
         return ventaGuardada;
     }
 
-    // Métodos adicionales
+    // Métodos adicionales - EXACTAMENTE IGUALES
     public Optional<Venta> findById(Integer id) {
         return ventaRepository.findById(id);
     }
@@ -122,3 +123,4 @@ public class VentaService {
         return false;
     }
 }
+
