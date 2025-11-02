@@ -20,31 +20,27 @@ import java.util.Collections;
 @Configuration
 public class GoogleDriveConfig {
 
-    // 1. Inyecta el JSON de credenciales desde las variables de entorno
+    // 1️⃣ Inyecta el JSON de credenciales desde variables de entorno
     @Value("${GOOGLE_CREDENTIALS}")
     private String googleCredentialsJson;
 
-    // 2. Define el "Application Name" (puede ser cualquiera)
-    private static final String APPLICATION_NAME = "Demo Spring Boot App";
-    
-    // 3. Define la fábrica de JSON
+    private static final String APPLICATION_NAME = "TiendaVirtual-DriveUploader";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
-    // 4. Define los permisos que necesitamos (solo subir archivos)
+    // 2️⃣ Permisos: permite subir y leer archivos
     private static final String SCOPE = DriveScopes.DRIVE_FILE;
 
     @Bean
     public Drive googleDriveService() throws IOException, GeneralSecurityException {
-        
-        // 5. Carga las credenciales desde el String JSON
+        // 3️⃣ Cargar credenciales desde el JSON (variable de entorno)
         GoogleCredentials credentials = GoogleCredentials.fromStream(
                 new ByteArrayInputStream(googleCredentialsJson.getBytes())
         ).createScoped(Collections.singleton(SCOPE));
 
-        // 6. Prepara el transporte HTTP
+        // 4️⃣ Preparar el transporte HTTP
         final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 
-        // 7. Construye y retorna el servicio de Drive
+        // 5️⃣ Crear y devolver el cliente de Drive
         return new Drive.Builder(
                 httpTransport,
                 JSON_FACTORY,
