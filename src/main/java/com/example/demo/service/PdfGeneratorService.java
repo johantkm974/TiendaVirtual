@@ -6,8 +6,6 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-
-// ✅ Imports de Google Drive
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.FileContent;
 import com.google.api.services.drive.Drive;
@@ -29,22 +27,19 @@ public class PdfGeneratorService {
     @Autowired
     private Drive driveService;
 
-    // ✅ ID de la carpeta en Drive (asegúrate de tenerlo en application.properties o .env)
-    @Value("${GOOGLE_DRIVE_FOLDER_ID:1fip_mSbv8XTBkDKTDpSkg3zw52-eYU1x}")
+    @Value("${GOOGLE_DRIVE_FOLDER_ID}")
     private String googleDriveFolderId;
 
     public String generarReciboPDF(Venta venta) throws Exception {
-        // 📁 Carpeta temporal (Railway solo permite /tmp)
         String carpeta = "/tmp";
         String nombreArchivoLocal = "recibo_venta_" + venta.getId() + ".pdf";
         String rutaCompletaLocal = carpeta + "/" + nombreArchivoLocal;
 
-        // 1️⃣ Generar el PDF localmente
+        // 1️⃣ Generar PDF
         Document document = new Document();
         PdfWriter.getInstance(document, new FileOutputStream(rutaCompletaLocal));
         document.open();
 
-        // 🧾 Encabezado
         Font fontTitulo = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
         Paragraph titulo = new Paragraph("Recibo de Venta", fontTitulo);
         titulo.setAlignment(Element.ALIGN_CENTER);
@@ -54,7 +49,6 @@ public class PdfGeneratorService {
         document.add(new Paragraph("Cliente: " + venta.getCliente().getNombre()));
         document.add(new Paragraph(" "));
 
-        // 🧮 Tabla de productos
         PdfPTable tabla = new PdfPTable(4);
         tabla.setWidthPercentage(100);
         tabla.setWidths(new float[]{4, 2, 2, 2});
@@ -78,7 +72,7 @@ public class PdfGeneratorService {
         document.add(new Paragraph("Total: S/ " + String.format("%.2f", venta.getTotal())));
         document.close();
 
-        // 2️⃣ Subir el archivo a Google Drive
+        // 2️⃣ Subida a Drive
         try {
             com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
             fileMetadata.setName(nombreArchivoLocal);
@@ -87,55 +81,27 @@ public class PdfGeneratorService {
             java.io.File localFile = new java.io.File(rutaCompletaLocal);
             FileContent mediaContent = new FileContent("application/pdf", localFile);
 
-            // 🚀 Subida a Drive
             com.google.api.services.drive.model.File uploadedFile = driveService.files()
                     .create(fileMetadata, mediaContent)
                     .setFields("id, webViewLink")
                     .execute();
 
-            // 🌍 Hacer público el archivo
             Permission filePermission = new Permission()
                     .setType("anyone")
                     .setRole("reader");
             driveService.permissions().create(uploadedFile.getId(), filePermission).execute();
 
-            // 🧹 Borrar archivo temporal
             localFile.delete();
 
-            System.out.println("✅ Archivo subido correctamente a Drive: " + uploadedFile.getWebViewLink());
+            System.out.println("✅ PDF subido a Drive correctamente: " + uploadedFile.getWebViewLink());
             return uploadedFile.getWebViewLink();
 
         } catch (GoogleJsonResponseException e) {
             System.err.println("❌ Error de Drive: " + e.getDetails().getMessage());
             throw new RuntimeException("Error al subir a Drive: " + e.getDetails().getMessage());
-        } catch (Exception e) {
-            System.err.println("❌ Error general al subir PDF a Drive: " + e.getMessage());
-            throw e;
-        }
-    }
-
-    // ✅ (Opcional) Verificador rápido de carpeta
-    public void verificarCarpetaDrive() {
-        try {
-            System.out.println("🔎 Verificando acceso a carpeta: " + googleDriveFolderId);
-            Drive.Files.List request = driveService.files().list()
-                    .setQ("'" + googleDriveFolderId + "' in parents and trashed = false")
-                    .setFields("files(id, name)")
-                    .setPageSize(3);
-
-            List<com.google.api.services.drive.model.File> archivos = request.execute().getFiles();
-            if (archivos == null || archivos.isEmpty()) {
-                System.out.println("✅ Carpeta accesible (vacía o sin archivos visibles).");
-            } else {
-                System.out.println("✅ Carpeta accesible. Archivos encontrados:");
-                for (com.google.api.services.drive.model.File f : archivos) {
-                    System.out.println(" - " + f.getName() + " (" + f.getId() + ")");
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("❌ No se pudo acceder a la carpeta de Drive: " + e.getMessage());
         }
     }
 }
+
 
 
