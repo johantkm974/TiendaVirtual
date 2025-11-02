@@ -79,8 +79,11 @@ public class PdfGeneratorService {
                 )
         );
 
-        // ✅ Retornar la URL pública del PDF
-        return uploadResult.get("secure_url").toString();
+        String pdfUrl = uploadResult.get("secure_url").toString()
+        .replace("/upload/", "/upload/fl_attachment/");
+
+        return pdfUrl;
     }
 }
+
 
