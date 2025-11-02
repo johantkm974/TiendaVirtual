@@ -134,49 +134,27 @@ public class EmailService {
             """.formatted(pdfUrl, pdfUrl);
     }
 
-    private String generarContenidoRecibo(String destinatario, String pdfUrl) {
-    return """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: #4CAF50; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
-                .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; }
-                .button { display: inline-block; padding: 12px 24px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px; margin: 10px 0; }
-                .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; }
-                .url-box { word-break: break-all; background: #f0f0f0; padding: 10px; border-radius: 4px; font-size: 12px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>¡Gracias por tu compra!</h1>
+    private String generarContenidoConAdjunto(String cuerpo, String adjuntoUrl) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .button { display: inline-block; padding: 12px 24px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px; margin: 10px 0; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <p>%s</p>
+                    <p><strong>Descarga el archivo adjunto:</strong></p>
+                    <p><a href="%s" class="button">Descargar Archivo</a></p>
+                    <p>Enlace directo: %s</p>
                 </div>
-                <div class="content">
-                    <p>Hola,</p>
-                    <p>Tu compra ha sido procesada exitosamente. Aquí tienes los detalles:</p>
-                    
-                    <p><strong>Descarga tu recibo PDF:</strong></p>
-                    <p><a href="%s" class="button" target="_blank">📥 Descargar Recibo PDF</a></p>
-                    
-                    <p><em>Si el botón no funciona, copia y pega este enlace en tu navegador:</em></p>
-                    <div class="url-box">%s</div>
-                    
-                    <p><strong>Nota:</strong> Al hacer clic se descargará automáticamente el recibo en formato PDF.</p>
-                    
-                    <div class="footer">
-                        <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
-                        <p>&copy; 2024 Tienda Virtual. Todos los derechos reservados.</p>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """.formatted(pdfUrl, pdfUrl);
+            </body>
+            </html>
+            """.formatted(cuerpo.replace("\n", "<br>"), adjuntoUrl, adjuntoUrl);
+    }
 }
-
-}
-
