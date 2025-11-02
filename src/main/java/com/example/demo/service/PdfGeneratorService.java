@@ -4,10 +4,14 @@ import com.example.demo.model.DetalleVenta;
 import com.example.demo.model.Venta;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.http.FileContent;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.File;
 import org.springframework.stereotype.Service;
+
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -15,18 +19,21 @@ import java.util.*;
 @Service
 public class PdfGeneratorService {
 
+    // 🔹 Genera el PDF y lo sube a Google Drive
     public String generarReciboPDF(Venta venta) throws Exception {
         String carpeta = "/tmp";
         String nombreArchivo = carpeta + "/recibo_venta_" + venta.getId() + ".pdf";
 
-        // Crear el PDF
+        // ====== Generar el PDF ======
         Document document = new Document();
         PdfWriter.getInstance(document, new FileOutputStream(nombreArchivo));
         document.open();
+
         Font fontTitulo = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
         Paragraph titulo = new Paragraph("Recibo de Venta", fontTitulo);
         titulo.setAlignment(Element.ALIGN_CENTER);
         document.add(titulo);
+
         document.add(new Paragraph("Fecha: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date())));
         document.add(new Paragraph("Cliente: " + venta.getCliente().getNombre()));
         document.add(new Paragraph(" "));
@@ -52,41 +59,49 @@ public class PdfGeneratorService {
         document.add(new Paragraph("Total: S/ " + String.format("%.2f", venta.getTotal())));
         document.close();
 
-        // Subir a File.io
+        // ====== Subir a Google Drive ======
         File pdfFile = new File(nombreArchivo);
-        String fileUrl = uploadToFileIo(pdfFile);
+        String fileUrl = uploadToGoogleDrive(pdfFile);
         return fileUrl;
     }
 
-    private String uploadToFileIo(File file) throws IOException {
-        URL url = new URL("https://file.io/?expires=1d"); // expira en 1 día
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setDoOutput(true);
-        conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=---ContentBoundary");
-
-        try (OutputStream out = conn.getOutputStream()) {
-            out.write(("-----ContentBoundary\r\n" +
-                    "Content-Disposition: form-data; name=\"file\"; filename=\"" + file.getName() + "\"\r\n" +
-                    "Content-Type: application/pdf\r\n\r\n").getBytes());
-            Files.copy(file.toPath(), out);
-            out.write("\r\n-----ContentBoundary--\r\n".getBytes());
+    // 🔹 Método para subir el PDF a Google Drive
+    private String uploadToGoogleDrive(File filePath) throws Exception {
+        // Cargar credenciales desde variable de entorno
+        String credentialsJson = System.getenv("GOOGLE_CREDENTIALS");
+        if (credentialsJson == null) {
+            throw new IllegalStateException("❌ Variable GOOGLE_CREDENTIALS no encontrada.");
         }
 
-        // Leer respuesta JSON
-        StringBuilder response = new StringBuilder();
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                response.append(line);
-            }
+        InputStream credentialsStream = new ByteArrayInputStream(credentialsJson.getBytes());
+        GoogleCredential credential = GoogleCredential.fromStream(credentialsStream)
+                .createScoped(Collections.singleton(DriveScopes.DRIVE_FILE));
+
+        Drive driveService = new Drive.Builder(
+                credential.getTransport(),
+                credential.getJsonFactory(),
+                credential
+        ).setApplicationName("TiendaVirtual").build();
+
+        // Crear metadatos del archivo
+        File fileMetadata = new File();
+        fileMetadata.setName(filePath.getName());
+
+        // ID de carpeta (desde variable en Railway)
+        String folderId = System.getenv("GOOGLE_DRIVE_FOLDER_ID");
+        if (folderId != null && !folderId.isEmpty()) {
+            fileMetadata.setParents(Collections.singletonList(folderId));
         }
 
-        // Extraer el enlace del JSON
-        String json = response.toString();
-        int start = json.indexOf("\"link\":\"") + 8;
-        int end = json.indexOf("\"", start);
-        return json.substring(start, end).replace("\\/", "/");
+        FileContent mediaContent = new FileContent("application/pdf", filePath);
+
+        File uploadedFile = driveService.files().create(fileMetadata, mediaContent)
+                .setFields("id, webViewLink, webContentLink")
+                .execute();
+
+        // Retornar enlace de descarga directa
+        return "https://drive.google.com/uc?export=download&id=" + uploadedFile.getId();
     }
 }
+
 
