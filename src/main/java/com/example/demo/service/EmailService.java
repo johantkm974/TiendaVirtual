@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
-import com.example.demo.config.BrevoConfig;
+import com.example.demo.config.BrevoApiConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -11,13 +12,13 @@ import java.util.Map;
 @Service
 public class EmailService {
 
-    private final BrevoConfig brevoConfig;
     private final RestTemplate restTemplate;
+    private final BrevoApiConfig.BrevoApiCredentials brevoCredentials;
 
-    // Inyectamos la configuración por constructor (mejor práctica)
-    public EmailService(BrevoConfig brevoConfig, RestTemplate restTemplate) {
-        this.brevoConfig = brevoConfig;
+    @Autowired
+    public EmailService(RestTemplate restTemplate, BrevoApiConfig.BrevoApiCredentials brevoCredentials) {
         this.restTemplate = restTemplate;
+        this.brevoCredentials = brevoCredentials;
     }
 
     public void enviarReciboPorCorreo(String destinatario, String pdfUrl) {
@@ -33,22 +34,23 @@ public class EmailService {
 
     private void enviarCorreoBrevo(String destinatario, String asunto, String contenidoHtml) {
         // Validar configuración primero
-        if (!brevoConfig.isConfigured()) {
-            System.out.println("⚠️ Configuración de Brevo no encontrada. Correo no enviado.");
+        if (!brevoCredentials.isConfigured()) {
+            System.out.println("❌ BREVO_API_KEY no configurada. Correo no enviado.");
+            System.out.println("ℹ️ Verifica que BREVO_API_KEY esté configurada en Railway");
             return;
         }
 
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("api-key", brevoConfig.getBrevoApiKey());
+            headers.set("api-key", brevoCredentials.getApiKey());
 
             Map<String, Object> requestBody = new HashMap<>();
             
             // Remitente desde configuración
             Map<String, String> sender = new HashMap<>();
-            sender.put("name", brevoConfig.getBrevoFromName());
-            sender.put("email", brevoConfig.getBrevoFromEmail());
+            sender.put("name", brevoCredentials.getFromName());
+            sender.put("email", brevoCredentials.getFromEmail());
             requestBody.put("sender", sender);
             
             // Destinatario
@@ -62,8 +64,10 @@ public class EmailService {
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
+            System.out.println("📧 Intentando enviar correo a: " + destinatario);
+
             ResponseEntity<String> response = restTemplate.exchange(
-                brevoConfig.getBrevoApiUrl(), 
+                "https://api.brevo.com/v3/smtp/email", 
                 HttpMethod.POST, 
                 request, 
                 String.class
@@ -77,9 +81,9 @@ public class EmailService {
             
         } catch (Exception e) {
             System.out.println("❌ Error al enviar correo vía API Brevo: " + e.getMessage());
-            // Log más detallado para debugging
+            // Manejo de errores específicos de Brevo
             if (e.getMessage().contains("401")) {
-                System.out.println("🔐 Error de autenticación - verifica tu API Key de Brevo");
+                System.out.println("🔐 Error de autenticación - BREVO_API_KEY inválida");
             } else if (e.getMessage().contains("402")) {
                 System.out.println("💳 Límite de crédito excedido en Brevo");
             } else if (e.getMessage().contains("400")) {
@@ -88,6 +92,7 @@ public class EmailService {
         }
     }
 
+    // Mantener los mismos métodos de generación de contenido...
     private String generarContenidoRecibo(String destinatario, String pdfUrl) {
         return """
             <!DOCTYPE html>
