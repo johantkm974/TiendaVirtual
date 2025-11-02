@@ -12,7 +12,6 @@ import com.example.demo.repository.ProductoRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -79,8 +78,8 @@ public class VentaService {
 
         Venta ventaGuardada = ventaRepository.save(venta);
 
-        // ✅ MANTENIENDO EXACTAMENTE LA MISMA LÓGICA DE ENVÍO DE CORREO
-         try {
+        // 🔹 Generar recibo PDF y enviarlo por correo
+        try {
             String pdfUrl = pdfGeneratorService.generarReciboPDF(ventaGuardada);
             if (usuario.getCorreo() != null && !usuario.getCorreo().isEmpty()) {
                 emailService.enviarReciboPorCorreo(usuario.getCorreo(), pdfUrl);
@@ -88,42 +87,15 @@ public class VentaService {
             System.out.println("✅ Recibo generado y enviado: " + pdfUrl);
         } catch (Exception e) {
             System.err.println("⚠️ Error al generar o enviar el recibo: " + e.getMessage());
-            // Manteniendo el mismo manejo de errores - no interrumpe el flujo
         }
-         
 
         return ventaGuardada;
     }
 
-    // Métodos adicionales - EXACTAMENTE IGUALES
-    public Optional<Venta> findById(Integer id) {
-        return ventaRepository.findById(id);
-    }
-
-    public List<Venta> findAll() {
-        return ventaRepository.findAll();
-    }
-
-    public Venta save(Venta venta) {
-        return ventaRepository.save(venta);
-    }
-
-    public Optional<Venta> findByPaymentId(String paymentId) {
-        return ventaRepository.findByPaymentId(paymentId);
-    }
-
-    public List<Venta> findByUsuarioId(Integer usuarioId) {
-        return ventaRepository.findByUsuarioId(usuarioId);
-    }
-
-    public boolean eliminarPorId(Integer id) {
-        if (ventaRepository.existsById(id)) {
-            ventaRepository.deleteById(id);
-            return true;
-        }
-        return false;
-    }
+    // Métodos adicionales
+    public Optional<Venta> findById(Integer id) { return ventaRepository.findById(id); }
+    public List<Venta> findAll() { return ventaRepository.findAll(); }
+    public Optional<Venta> findByPaymentId(String paymentId) { return ventaRepository.findByPaymentId(paymentId); }
 }
-
 
 
