@@ -97,26 +97,21 @@
         </dependency>
 
         <!-- ✅ Google Drive API -->
-       <!-- Google API Client -->
-        <dependency>
-           <groupId>com.google.apis</groupId>
-           <artifactId>google-api-services-drive</artifactId>
-           <version>v3-rev20220815-2.0.0</version>
-         </dependency>
-         
-         <!-- Google OAuth Client (Jetty) -->
-         <dependency>
-             <groupId>com.google.oauth-client</groupId>
-             <artifactId>google-oauth-client-jetty</artifactId>
-             <version>1.34.1</version>
-         </dependency>
-         
-         <!-- Google Drive API (última revisión estable pública) -->
-         <dependency>
-             <groupId>com.google.apis</groupId>
-             <artifactId>google-api-services-drive</artifactId>
-             <version>v3-rev20241129-2.0.0</version>
-         </dependency>
+    
+    <!-- ✅ Google Drive API (SOLO UNA VERSIÓN) -->
+    <dependency>
+        <groupId>com.google.apis</groupId>
+        <artifactId>google-api-services-drive</artifactId>
+        <version>v3-rev20220815-2.0.0</version>
+    </dependency>
+    
+    <!-- ✅ Google OAuth Client (Jetty) -->
+    <dependency>
+        <groupId>com.google.oauth-client</groupId>
+        <artifactId>google-oauth-client-jetty</artifactId>
+        <version>1.34.1</version>
+    </dependency>
+
     </dependencies>
 
     <build>
