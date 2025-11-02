@@ -1,59 +1,44 @@
 package com.example.demo.service;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 import com.example.demo.model.DetalleVenta;
 import com.example.demo.model.Venta;
 import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.itextpdf.text.pdf.*;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class PdfGeneratorService {
 
-    @Autowired
-    private Cloudinary cloudinary;
-
     public String generarReciboPDF(Venta venta) throws Exception {
-
-        // 📁 Carpeta temporal (en Railway o Linux usa /tmp)
         String carpeta = "/tmp";
         String nombreArchivo = carpeta + "/recibo_venta_" + venta.getId() + ".pdf";
 
-        // 🧾 Crear documento PDF
+        // Crear el PDF
         Document document = new Document();
         PdfWriter.getInstance(document, new FileOutputStream(nombreArchivo));
         document.open();
-
-        // Encabezado
         Font fontTitulo = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
         Paragraph titulo = new Paragraph("Recibo de Venta", fontTitulo);
         titulo.setAlignment(Element.ALIGN_CENTER);
         document.add(titulo);
-        document.add(new Paragraph(" "));
         document.add(new Paragraph("Fecha: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date())));
         document.add(new Paragraph("Cliente: " + venta.getCliente().getNombre()));
         document.add(new Paragraph(" "));
 
-        // Tabla de productos
         PdfPTable tabla = new PdfPTable(4);
         tabla.setWidthPercentage(100);
         tabla.setWidths(new float[]{4, 2, 2, 2});
-
-        String[] encabezados = {"Producto", "Cantidad", "Precio Unitario", "Subtotal"};
-        for (String encabezado : encabezados) {
-            PdfPCell celda = new PdfPCell(new Phrase(encabezado));
-            celda.setBackgroundColor(BaseColor.LIGHT_GRAY);
-            tabla.addCell(celda);
+        String[] headers = {"Producto", "Cantidad", "Precio Unitario", "Subtotal"};
+        for (String h : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(h));
+            cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+            tabla.addCell(cell);
         }
 
         for (DetalleVenta detalle : venta.getDetalles()) {
@@ -64,27 +49,44 @@ public class PdfGeneratorService {
         }
 
         document.add(tabla);
-        document.add(new Paragraph(" "));
         document.add(new Paragraph("Total: S/ " + String.format("%.2f", venta.getTotal())));
         document.close();
 
-        // ☁️ Subir el PDF a Cloudinary (como archivo RAW)
-        Map uploadResult = cloudinary.uploader().upload(
-            new File(nombreArchivo),
-            ObjectUtils.asMap(
-                "folder", "recibos",
-                "resource_type", "raw",   // ✅ obligatorio para PDF
-                "format", "pdf",
-                "use_filename", true,
-                "unique_filename", true
-            )
-        );
+        // Subir a File.io
+        File pdfFile = new File(nombreArchivo);
+        String fileUrl = uploadToFileIo(pdfFile);
+        return fileUrl;
+    }
 
-        // 🔗 Generar URL directa con descarga
-        String secureUrl = uploadResult.get("secure_url").toString();
-        String pdfUrl = secureUrl.replace("/upload/", "/upload/fl_attachment/");
+    private String uploadToFileIo(File file) throws IOException {
+        URL url = new URL("https://file.io/?expires=1d"); // expira en 1 día
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=---ContentBoundary");
 
-        System.out.println("✅ PDF subido correctamente: " + pdfUrl);
-        return pdfUrl;
+        try (OutputStream out = conn.getOutputStream()) {
+            out.write(("-----ContentBoundary\r\n" +
+                    "Content-Disposition: form-data; name=\"file\"; filename=\"" + file.getName() + "\"\r\n" +
+                    "Content-Type: application/pdf\r\n\r\n").getBytes());
+            Files.copy(file.toPath(), out);
+            out.write("\r\n-----ContentBoundary--\r\n".getBytes());
+        }
+
+        // Leer respuesta JSON
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                response.append(line);
+            }
+        }
+
+        // Extraer el enlace del JSON
+        String json = response.toString();
+        int start = json.indexOf("\"link\":\"") + 8;
+        int end = json.indexOf("\"", start);
+        return json.substring(start, end).replace("\\/", "/");
     }
 }
+
