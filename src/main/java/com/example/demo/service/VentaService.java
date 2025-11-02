@@ -41,6 +41,9 @@ public class VentaService {
         this.emailService = emailService;
     }
 
+    // ============================================================
+    // ✅ MÉTODO PRINCIPAL: CREAR UNA VENTA COMPLETA
+    // ============================================================
     @Transactional
     public Venta crearVenta(Integer usuarioId, Integer metodoPagoId, List<DetalleVenta> detalles) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -92,10 +95,33 @@ public class VentaService {
         return ventaGuardada;
     }
 
-    // Métodos adicionales
-    public Optional<Venta> findById(Integer id) { return ventaRepository.findById(id); }
-    public List<Venta> findAll() { return ventaRepository.findAll(); }
-    public Optional<Venta> findByPaymentId(String paymentId) { return ventaRepository.findByPaymentId(paymentId); }
+    // ============================================================
+    // ✅ MÉTODOS ADICIONALES DE CONSULTA
+    // ============================================================
+    public Optional<Venta> findById(Integer id) {
+        return ventaRepository.findById(id);
+    }
+
+    public List<Venta> findAll() {
+        return ventaRepository.findAll();
+    }
+
+    public Optional<Venta> findByPaymentId(String paymentId) {
+        return ventaRepository.findByPaymentId(paymentId);
+    }
+
+    // ============================================================
+    // ✅ MÉTODOS REQUERIDOS POR LOS CONTROLADORES (no eliminar)
+    // ============================================================
+    public Venta save(Venta venta) {
+        return ventaRepository.save(venta);
+    }
+
+    public boolean eliminarPorId(Integer id) {
+        if (ventaRepository.existsById(id)) {
+            ventaRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 }
-
-
