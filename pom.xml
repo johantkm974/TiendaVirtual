@@ -98,10 +98,10 @@
 
         <!-- ✅ Google Drive API -->
        <!-- Google API Client -->
-         <dependency>
-             <groupId>com.google.api-client</groupId>
-             <artifactId>google-api-client</artifactId>
-             <version>2.5.0</version>
+        <dependency>
+           <groupId>com.google.apis</groupId>
+           <artifactId>google-api-services-drive</artifactId>
+           <version>v3-rev20220815-2.0.0</version>
          </dependency>
          
          <!-- Google OAuth Client (Jetty) -->
