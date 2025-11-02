@@ -72,7 +72,8 @@ public class PdfGeneratorService {
                 new File(nombreArchivo),
                 ObjectUtils.asMap(
                         "folder", "recibos",
-                        "resource_type", "raw", // ✅ para archivos PDF
+                        "resource_type", "auto", // ✅ para archivos PDF
+                        "format", "pdf", 
                         "use_filename", true,
                         "unique_filename", true
                 )
@@ -82,3 +83,4 @@ public class PdfGeneratorService {
         return uploadResult.get("secure_url").toString();
     }
 }
+
