@@ -75,7 +75,7 @@ public class PdfGeneratorService {
                 new java.io.File(rutaArchivo),
                 ObjectUtils.asMap(
                         "folder", "recibos_tienda_virtual",
-                        "resource_type", "auto",
+                        "resource_type", "raw",
                         "public_id", "recibo_" + venta.getId()
                 )
             );
@@ -94,5 +94,6 @@ public class PdfGeneratorService {
         }
     }
 }
+
 
 
