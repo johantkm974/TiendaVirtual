@@ -19,7 +19,6 @@ import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 @Service
 public class PdfGeneratorService {
@@ -35,7 +34,7 @@ public class PdfGeneratorService {
         String nombreArchivoLocal = "recibo_venta_" + venta.getId() + ".pdf";
         String rutaCompletaLocal = carpeta + "/" + nombreArchivoLocal;
 
-        // 1️⃣ Generar PDF
+        // 1️⃣ Generar el PDF localmente
         Document document = new Document();
         PdfWriter.getInstance(document, new FileOutputStream(rutaCompletaLocal));
         document.open();
@@ -72,11 +71,11 @@ public class PdfGeneratorService {
         document.add(new Paragraph("Total: S/ " + String.format("%.2f", venta.getTotal())));
         document.close();
 
-        // 2️⃣ Subida a Drive
+        // 2️⃣ Subir a Google Drive
         try {
             com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
             fileMetadata.setName(nombreArchivoLocal);
-            fileMetadata.setParents(Collections.singletonList(googleDriveFolderId));
+            fileMetadata.setParents(Collections.singletonList(googleDriveFolderId)); // Carpeta compartida
 
             java.io.File localFile = new java.io.File(rutaCompletaLocal);
             FileContent mediaContent = new FileContent("application/pdf", localFile);
@@ -84,13 +83,19 @@ public class PdfGeneratorService {
             com.google.api.services.drive.model.File uploadedFile = driveService.files()
                     .create(fileMetadata, mediaContent)
                     .setFields("id, webViewLink")
+                    .setSupportsAllDrives(true) // ✅ CLAVE: permite usar carpetas compartidas o Shared Drives
                     .execute();
 
+            // 🔓 Permiso público de lectura
             Permission filePermission = new Permission()
                     .setType("anyone")
                     .setRole("reader");
-            driveService.permissions().create(uploadedFile.getId(), filePermission).execute();
+            driveService.permissions()
+                    .create(uploadedFile.getId(), filePermission)
+                    .setSupportsAllDrives(true)
+                    .execute();
 
+            // 🧹 Eliminar archivo local temporal
             localFile.delete();
 
             System.out.println("✅ PDF subido a Drive correctamente: " + uploadedFile.getWebViewLink());
@@ -99,9 +104,9 @@ public class PdfGeneratorService {
         } catch (GoogleJsonResponseException e) {
             System.err.println("❌ Error de Drive: " + e.getDetails().getMessage());
             throw new RuntimeException("Error al subir a Drive: " + e.getDetails().getMessage());
+        } catch (Exception e) {
+            System.err.println("❌ Error inesperado al subir a Drive: " + e.getMessage());
+            throw new RuntimeException("Error al subir a Drive", e);
         }
     }
 }
-
-
-
