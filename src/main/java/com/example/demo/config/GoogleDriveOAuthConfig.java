@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.util.Collections;
 
 @Configuration
@@ -19,8 +18,25 @@ public class GoogleDriveOAuthConfig {
 
     @Bean
     public Drive googleDriveService() throws Exception {
-        String privateKey = System.getenv("GOOGLE_PRIVATE_KEY");
+        // ======== DEBUG opcional ========
+        System.out.println("===== GOOGLE DRIVE CONFIG DEBUG =====");
+        System.out.println("GOOGLE_CLIENT_EMAIL: " + System.getenv("GOOGLE_CLIENT_EMAIL"));
+        System.out.println("GOOGLE_CLIENT_ID: " + System.getenv("GOOGLE_CLIENT_ID"));
+        System.out.println("GOOGLE_PRIVATE_KEY (inicio): " +
+                (System.getenv("GOOGLE_PRIVATE_KEY") != null
+                        ? System.getenv("GOOGLE_PRIVATE_KEY").substring(0, 50) + "..."
+                        : "null"));
+        System.out.println("=====================================");
 
+        // ✅ Corrige los saltos de línea si Railway los escapó con "\n"
+        String privateKey = System.getenv("GOOGLE_PRIVATE_KEY");
+        if (privateKey != null) {
+            privateKey = privateKey.replace("\\n", "\n");
+        } else {
+            throw new IllegalStateException("❌ GOOGLE_PRIVATE_KEY no encontrada en variables de entorno");
+        }
+
+        // Cargar las credenciales de la cuenta de servicio
         ServiceAccountCredentials credentials = ServiceAccountCredentials.fromPkcs8(
                 System.getenv("GOOGLE_CLIENT_ID"),
                 System.getenv("GOOGLE_CLIENT_EMAIL"),
@@ -29,11 +45,16 @@ public class GoogleDriveOAuthConfig {
                 Collections.singleton(DriveScopes.DRIVE_FILE)
         );
 
-        return new Drive.Builder(
+        // Crear el servicio de Google Drive
+        Drive driveService = new Drive.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 GsonFactory.getDefaultInstance(),
                 new HttpCredentialsAdapter(credentials)
         ).setApplicationName("Tienda Virtual").build();
+
+        System.out.println("✅ Conexión a Google Drive inicializada correctamente.");
+
+        return driveService;
     }
 }
 
