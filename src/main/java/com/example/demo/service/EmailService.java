@@ -25,9 +25,6 @@ public class EmailService {
         this.brevoCredentials = brevoCredentials;
     }
 
-    /**
-     * Envía el PDF generado directamente como adjunto al correo.
-     */
     public void enviarReciboAdjunto(String destinatario, String pdfPath, String nombreArchivo) {
         if (!brevoCredentials.isConfigured()) {
             System.out.println("❌ BREVO_API_KEY no configurada. Correo no enviado.");
@@ -35,51 +32,43 @@ public class EmailService {
         }
 
         try {
-            // Convertir el archivo PDF a Base64
             File file = new File(pdfPath);
             byte[] fileContent = Files.readAllBytes(file.toPath());
             String base64File = Base64.getEncoder().encodeToString(fileContent);
 
-            // Configurar encabezados
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("api-key", brevoCredentials.getApiKey());
 
-            // Configurar cuerpo del correo
             Map<String, Object> requestBody = new HashMap<>();
 
-            // Remitente
             Map<String, String> sender = new HashMap<>();
             sender.put("name", brevoCredentials.getFromName());
             sender.put("email", brevoCredentials.getFromEmail());
             requestBody.put("sender", sender);
 
-            // Destinatario
             Map<String, String> to = new HashMap<>();
             to.put("email", destinatario);
             requestBody.put("to", List.of(to));
 
-            // Asunto y contenido
             requestBody.put("subject", "Recibo de tu compra - Tienda Virtual");
             requestBody.put("htmlContent", """
                 <html>
                 <body>
                     <h2 style='color:#4CAF50;'>¡Gracias por tu compra!</h2>
-                    <p>Adjunto encontrarás el recibo en formato PDF con los detalles de tu pedido.</p>
-                    <p>Guarda este comprobante para tus registros.</p>
+                    <p>Adjunto encontrarás tu recibo en formato PDF con todos los detalles de tu pedido.</p>
+                    <p>Por favor guarda este comprobante para tus registros.</p>
                     <hr>
-                    <p style='font-size:12px;color:#888;'>© 2025 Tienda Virtual - Envío automático.</p>
+                    <p style='font-size:12px;color:#777;'>© 2025 Tienda Virtual - Envío automático</p>
                 </body>
                 </html>
             """);
 
-            // 📎 Adjuntar el archivo PDF
             Map<String, String> attachment = new HashMap<>();
             attachment.put("content", base64File);
             attachment.put("name", nombreArchivo);
             requestBody.put("attachment", List.of(attachment));
 
-            // Enviar solicitud a Brevo
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
             ResponseEntity<String> response = restTemplate.exchange(
                     "https://api.brevo.com/v3/smtp/email",
@@ -95,10 +84,11 @@ public class EmailService {
                 System.out.println(response.getBody());
             }
 
+            // Eliminar el archivo temporal
+            if (file.exists()) file.delete();
+
         } catch (Exception e) {
             System.out.println("❌ Error al enviar correo con adjunto: " + e.getMessage());
         }
     }
 }
-
-
