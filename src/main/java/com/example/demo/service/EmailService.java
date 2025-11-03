@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.config.BrevoApiConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -12,106 +13,150 @@ import java.util.Map;
 public class EmailService {
 
     private final RestTemplate restTemplate;
-
-    // Si usas Brevo/Sender (antes Sendinblue), coloca aquí tu API key y remitente
-    // Puedes inyectarlas vía @Value o a través de una clase @ConfigurationProperties
-    private final String brevoApiKey;
-    private final String fromName;
-    private final String fromEmail;
+    private final BrevoApiConfig.BrevoApiCredentials brevoCredentials;
 
     @Autowired
-    public EmailService(RestTemplate restTemplate) {
+    public EmailService(RestTemplate restTemplate, BrevoApiConfig.BrevoApiCredentials brevoCredentials) {
         this.restTemplate = restTemplate;
-        // ⚠️ Ajusta estos valores o inyecta desde application.properties
-        this.brevoApiKey = System.getenv("BREVO_API_KEY");   // o @Value("${brevo.apiKey}")
-        this.fromName     = "Tienda Virtual";
-        this.fromEmail    = "no-reply@tu-dominio.com";
+        this.brevoCredentials = brevoCredentials;
     }
 
-    /**
-     * ✅ Método usado por tus controladores anteriores (4 parámetros).
-     * Firma exacta: (String, String, String, String)
-     * to, subject, htmlBody, adjuntoUrl
-     *
-     * NOTA: En este ejemplo el “adjunto” se envía como enlace (URL) dentro del HTML.
-     * Si luego quieres adjuntar el binario, puedo darte el payload de Brevo con attachments (Base64).
-     */
-    public void enviarCorreoConAdjunto(String to, String subject, String htmlBody, String adjuntoUrl) {
-        String html = """
-            <html><body>
-              %s
-              <p style="margin-top:12px">
-                <a href="%s">Descargar adjunto (PDF)</a>
-              </p>
-            </body></html>
-        """.formatted(htmlBody == null ? "" : htmlBody, adjuntoUrl == null ? "#" : adjuntoUrl);
-
-        enviarCorreoBrevo(to, subject, html);
+    public void enviarReciboPorCorreo(String destinatario, String pdfUrl) {
+        String asunto = "Recibo de tu compra - Tienda Virtual";
+        String contenido = generarContenidoRecibo(destinatario, pdfUrl);
+        enviarCorreoBrevo(destinatario, asunto, contenido);
     }
 
-    /**
-     * ✅ Método que te falta en VentaService y PagoSimuladoController (3 parámetros).
-     * Firma exacta: (String, String, String)
-     * to, subject, pdfUrl
-     *
-     * Equivale a enviar un “recibo” con enlace al PDF.
-     */
-    public void enviarReciboAdjunto(String to, String subject, String pdfUrl) {
-        String html = """
-            <html><body>
-              <h2>Gracias por tu compra</h2>
-              <p>Tu comprobante está listo. Puedes descargarlo aquí:</p>
-              <p><a href="%s">Descargar recibo (PDF)</a></p>
-            </body></html>
-        """.formatted(pdfUrl == null ? "#" : pdfUrl);
-
-        enviarCorreoBrevo(to, subject, html);
+    public void enviarCorreoConAdjunto(String destinatario, String asunto, String cuerpo, String adjuntoUrl) {
+        String contenido = generarContenidoConAdjunto(cuerpo, adjuntoUrl);
+        enviarCorreoBrevo(destinatario, asunto, contenido);
     }
 
-    // ============= Infra de envío (Brevo) =============
-
-    private void enviarCorreoBrevo(String to, String subject, String htmlContent) {
-        if (brevoApiKey == null || brevoApiKey.isBlank()) {
-            System.err.println("❌ BREVO_API_KEY no configurada. No se envió el correo.");
+    private void enviarCorreoBrevo(String destinatario, String asunto, String contenidoHtml) {
+        // Validar configuración primero
+        if (!brevoCredentials.isConfigured()) {
+            System.out.println("❌ BREVO_API_KEY no configurada. Correo no enviado.");
+            System.out.println("ℹ️ Verifica que BREVO_API_KEY esté configurada en Railway");
             return;
         }
 
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("api-key", brevoApiKey);
+            headers.set("api-key", brevoCredentials.getApiKey());
 
-            Map<String, Object> body = new HashMap<>();
-
+            Map<String, Object> requestBody = new HashMap<>();
+            
+            // Remitente desde configuración
             Map<String, String> sender = new HashMap<>();
-            sender.put("name", fromName);
-            sender.put("email", fromEmail);
-            body.put("sender", sender);
+            sender.put("name", brevoCredentials.getFromName());
+            sender.put("email", brevoCredentials.getFromEmail());
+            requestBody.put("sender", sender);
+            
+            // Destinatario
+            Map<String, String> to = new HashMap<>();
+            to.put("email", destinatario);
+            requestBody.put("to", new Map[]{to});
+            
+            // Asunto y contenido
+            requestBody.put("subject", asunto);
+            requestBody.put("htmlContent", contenidoHtml);
 
-            Map<String, String> toEntry = new HashMap<>();
-            toEntry.put("email", to);
-            body.put("to", new Map[]{toEntry});
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
-            body.put("subject", subject);
-            body.put("htmlContent", htmlContent);
+            System.out.println("📧 Intentando enviar correo a: " + destinatario);
 
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-
-            ResponseEntity<String> resp = restTemplate.exchange(
-                "https://api.brevo.com/v3/smtp/email",
-                HttpMethod.POST,
-                request,
+            ResponseEntity<String> response = restTemplate.exchange(
+                "https://api.brevo.com/v3/smtp/email", 
+                HttpMethod.POST, 
+                request, 
                 String.class
             );
 
-            if (resp.getStatusCode() == HttpStatus.CREATED) {
-                System.out.println("✅ Correo enviado a " + to);
+            if (response.getStatusCode() == HttpStatus.CREATED) {
+                System.out.println("✅ Correo enviado exitosamente a: " + destinatario);
             } else {
-                System.out.println("⚠️ Respuesta Brevo: " + resp.getStatusCode());
+                System.out.println("⚠️ Respuesta inesperada de Brevo: " + response.getStatusCode());
             }
+            
         } catch (Exception e) {
-            System.err.println("❌ Error enviando correo: " + e.getMessage());
+            System.out.println("❌ Error al enviar correo vía API Brevo: " + e.getMessage());
+            // Manejo de errores específicos de Brevo
+            if (e.getMessage().contains("401")) {
+                System.out.println("🔐 Error de autenticación - BREVO_API_KEY inválida");
+            } else if (e.getMessage().contains("402")) {
+                System.out.println("💳 Límite de crédito excedido en Brevo");
+            } else if (e.getMessage().contains("400")) {
+                System.out.println("📧 Error en la solicitud - verifica el formato del email");
+            }
         }
     }
+
+    // Mantener los mismos métodos de generación de contenido...
+    private String generarContenidoRecibo(String destinatario, String pdfUrl) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: #4CAF50; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+                    .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; }
+                    .button { display: inline-block; padding: 12px 24px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px; margin: 10px 0; }
+                    .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>¡Gracias por tu compra!</h1>
+                    </div>
+                    <div class="content">
+                        <p>Hola,</p>
+                        <p>Tu compra ha sido procesada exitosamente. Aquí tienes los detalles:</p>
+                        
+                        <p><strong>Puedes descargar tu recibo en el siguiente enlace:</strong></p>
+                        <p><a href="%s" class="button">Descargar Recibo PDF</a></p>
+                        
+                        <p>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
+                        <p>%s</p>
+                        
+                        <div class="footer">
+                            <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+                            <p>&copy; 2024 Tienda Virtual. Todos los derechos reservados.</p>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """.formatted(pdfUrl, pdfUrl);
+    }
+    private String generarContenidoConAdjunto(String cuerpo, String adjuntoUrl) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .button { display: inline-block; padding: 12px 24px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px; margin: 10px 0; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <p>%s</p>
+                    <p><strong>Descarga el archivo adjunto:</strong></p>
+                    <p><a href="%s" class="button">Descargar Archivo</a></p>
+                    <p>Enlace directo: %s</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(cuerpo.replace("\n", "<br>"), adjuntoUrl, adjuntoUrl);
+    }
 }
+
+
 
