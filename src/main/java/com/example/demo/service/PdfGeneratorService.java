@@ -1,35 +1,26 @@
 package com.example.demo.service;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 import com.example.demo.model.DetalleVenta;
 import com.example.demo.model.Venta;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class PdfGeneratorService {
-
-    @Autowired
-    private Cloudinary cloudinary;
 
     public String generarReciboPDF(Venta venta) throws Exception {
         String carpetaTemporal = "/tmp";
         String nombreArchivo = "recibo_venta_" + venta.getId() + ".pdf";
         String rutaArchivo = carpetaTemporal + "/" + nombreArchivo;
 
-        // 1️⃣ Generar PDF localmente
+        // 1️⃣ Generar el PDF localmente
         Document document = new Document();
         PdfWriter.getInstance(document, new FileOutputStream(rutaArchivo));
         document.open();
@@ -67,33 +58,11 @@ public class PdfGeneratorService {
         document.add(new Paragraph("Total: S/ " + String.format("%.2f", venta.getTotal())));
         document.close();
 
-        // 2️⃣ Subir PDF a Cloudinary
-        try {
-            System.out.println("📤 Subiendo recibo a Cloudinary...");
-
-            Map uploadResult = cloudinary.uploader().upload(
-                new java.io.File(rutaArchivo),
-                ObjectUtils.asMap(
-                        "folder", "recibos_tienda_virtual",
-                        "resource_type", "raw",
-                        "public_id", "recibo_" + venta.getId()
-                )
-            );
-
-            String url = (String) uploadResult.get("secure_url");
-
-            System.out.println("✅ PDF subido a Cloudinary correctamente: " + url);
-
-            // 🧹 Eliminar archivo local temporal
-            new java.io.File(rutaArchivo).delete();
-
-            return url;
-        } catch (Exception e) {
-            System.err.println("❌ Error al subir PDF a Cloudinary: " + e.getMessage());
-            throw new RuntimeException("Error al subir PDF a Cloudinary", e);
-        }
+        System.out.println("✅ Recibo PDF generado localmente: " + rutaArchivo);
+        return rutaArchivo;
     }
 }
+
 
 
 
