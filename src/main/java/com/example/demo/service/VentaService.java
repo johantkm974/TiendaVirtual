@@ -1,7 +1,15 @@
 package com.example.demo.service;
 
-import com.example.demo.model.*;
-import com.example.demo.repository.*;
+import com.example.demo.model.Venta;
+import com.example.demo.model.Usuario;
+import com.example.demo.model.MetodoPago;
+import com.example.demo.model.DetalleVenta;
+import com.example.demo.model.Producto;
+import com.example.demo.repository.VentaRepository;
+import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.repository.MetodoPagoRepository;
+import com.example.demo.repository.ProductoRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -33,6 +41,9 @@ public class VentaService {
         this.emailService = emailService;
     }
 
+    // ============================================================
+    // ✅ MÉTODO PRINCIPAL: CREAR UNA VENTA COMPLETA
+    // ============================================================
     @Transactional
     public Venta crearVenta(Integer usuarioId, Integer metodoPagoId, List<DetalleVenta> detalles) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -70,13 +81,13 @@ public class VentaService {
 
         Venta ventaGuardada = ventaRepository.save(venta);
 
-        // ✅ Generar PDF y enviarlo adjunto por correo
+        // 🔹 Generar recibo PDF y enviarlo por correo
         try {
-            String pdfPath = pdfGeneratorService.generarReciboPDF(ventaGuardada);
+            String pdfUrl = pdfGeneratorService.generarReciboPDF(ventaGuardada);
             if (usuario.getCorreo() != null && !usuario.getCorreo().isEmpty()) {
-                emailService.enviarReciboAdjunto(usuario.getCorreo(), pdfPath, "recibo_venta_" + ventaGuardada.getId() + ".pdf");
+                emailService.enviarReciboPorCorreo(usuario.getCorreo(), pdfUrl);
             }
-            System.out.println("✅ Recibo generado y enviado correctamente por correo adjunto.");
+            System.out.println("✅ Recibo generado y enviado: " + pdfUrl);
         } catch (Exception e) {
             System.err.println("⚠️ Error al generar o enviar el recibo: " + e.getMessage());
         }
@@ -84,6 +95,9 @@ public class VentaService {
         return ventaGuardada;
     }
 
+    // ============================================================
+    // ✅ MÉTODOS ADICIONALES DE CONSULTA
+    // ============================================================
     public Optional<Venta> findById(Integer id) {
         return ventaRepository.findById(id);
     }
@@ -96,6 +110,9 @@ public class VentaService {
         return ventaRepository.findByPaymentId(paymentId);
     }
 
+    // ============================================================
+    // ✅ MÉTODOS REQUERIDOS POR LOS CONTROLADORES (no eliminar)
+    // ============================================================
     public Venta save(Venta venta) {
         return ventaRepository.save(venta);
     }
@@ -108,3 +125,4 @@ public class VentaService {
         return false;
     }
 }
+
