@@ -34,7 +34,9 @@ public class PdfGeneratorService {
         String nombreArchivoLocal = "recibo_venta_" + venta.getId() + ".pdf";
         String rutaCompletaLocal = carpeta + "/" + nombreArchivoLocal;
 
-        // 1️⃣ Generar el PDF localmente
+        // ============================
+        // 1️⃣ Generar PDF localmente
+        // ============================
         Document document = new Document();
         PdfWriter.getInstance(document, new FileOutputStream(rutaCompletaLocal));
         document.open();
@@ -71,42 +73,60 @@ public class PdfGeneratorService {
         document.add(new Paragraph("Total: S/ " + String.format("%.2f", venta.getTotal())));
         document.close();
 
+        // ============================
         // 2️⃣ Subir a Google Drive
+        // ============================
         try {
+            if (googleDriveFolderId == null || googleDriveFolderId.isBlank()) {
+                throw new IllegalStateException("⚠️ GOOGLE_DRIVE_FOLDER_ID no está definida o está vacía.");
+            }
+
+            System.out.println("📂 Subiendo PDF a carpeta ID: " + googleDriveFolderId);
+
             com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
             fileMetadata.setName(nombreArchivoLocal);
-            fileMetadata.setParents(Collections.singletonList(googleDriveFolderId)); // Carpeta compartida
+            fileMetadata.setParents(Collections.singletonList(googleDriveFolderId.trim()));
 
             java.io.File localFile = new java.io.File(rutaCompletaLocal);
             FileContent mediaContent = new FileContent("application/pdf", localFile);
 
+            System.out.println("📦 Metadatos del archivo:");
+            System.out.println("  Nombre: " + fileMetadata.getName());
+            System.out.println("  Carpeta destino: " + fileMetadata.getParents());
+
+            // ✅ Clave: activar soporte para Shared Drives
             com.google.api.services.drive.model.File uploadedFile = driveService.files()
                     .create(fileMetadata, mediaContent)
                     .setFields("id, webViewLink")
-                    .setSupportsAllDrives(true) // ✅ CLAVE: permite usar carpetas compartidas o Shared Drives
+                    .setSupportsAllDrives(true)
                     .execute();
 
             // 🔓 Permiso público de lectura
             Permission filePermission = new Permission()
                     .setType("anyone")
                     .setRole("reader");
+
             driveService.permissions()
                     .create(uploadedFile.getId(), filePermission)
                     .setSupportsAllDrives(true)
                     .execute();
 
-            // 🧹 Eliminar archivo local temporal
-            localFile.delete();
+            // 🧹 Eliminar archivo temporal
+            if (localFile.exists()) {
+                boolean deleted = localFile.delete();
+                if (!deleted) System.out.println("⚠️ No se pudo eliminar el archivo temporal: " + rutaCompletaLocal);
+            }
 
-            System.out.println("✅ PDF subido a Drive correctamente: " + uploadedFile.getWebViewLink());
+            System.out.println("✅ PDF subido correctamente a Drive: " + uploadedFile.getWebViewLink());
             return uploadedFile.getWebViewLink();
 
         } catch (GoogleJsonResponseException e) {
-            System.err.println("❌ Error de Drive: " + e.getDetails().getMessage());
+            System.err.println("❌ Error de Drive (API): " + e.getDetails().getMessage());
             throw new RuntimeException("Error al subir a Drive: " + e.getDetails().getMessage());
         } catch (Exception e) {
-            System.err.println("❌ Error inesperado al subir a Drive: " + e.getMessage());
+            System.err.println("❌ Error inesperado: " + e.getMessage());
             throw new RuntimeException("Error al subir a Drive", e);
         }
     }
 }
+
