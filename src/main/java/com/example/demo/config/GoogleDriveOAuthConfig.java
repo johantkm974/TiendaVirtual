@@ -24,47 +24,48 @@ public class GoogleDriveOAuthConfig {
         String privateKey = System.getenv("GOOGLE_PRIVATE_KEY");
 
         if (privateKey == null || privateKey.isBlank()) {
-            throw new IllegalStateException("❌ ERROR: GOOGLE_PRIVATE_KEY no está definida en las variables de entorno.");
+            throw new IllegalStateException("❌ GOOGLE_PRIVATE_KEY no está definida o vacía en las variables de entorno.");
         }
 
-        // 🔎 Detección automática de formato
-        boolean tieneSaltosEscapados = privateKey.contains("\\n");
-        boolean tieneSaltosReales = privateKey.contains("\n");
+        // 🔍 Limpieza total: eliminar espacios invisibles o caracteres no válidos
+        privateKey = privateKey
+                .replace("\\r", "")
+                .replace("\\n", "\n")  // convierte literales escapados en saltos reales
+                .replace("\r", "")      // elimina CR (carriage return) de Windows
+                .trim();                // elimina espacios sobrantes
 
-        System.out.println("Formato detectado:");
-        System.out.println("  • Contiene \\n escapados: " + tieneSaltosEscapados);
-        System.out.println("  • Contiene saltos reales: " + tieneSaltosReales);
-
-        // ✅ Corrección automática: convierte "\n" en saltos de línea reales si es necesario
-        if (tieneSaltosEscapados && !tieneSaltosReales) {
-            privateKey = privateKey.replace("\\n", "\n");
-            System.out.println("✅ Se reemplazaron los \\n por saltos de línea reales.");
-        }
-
-        // ✅ Asegura que la clave empieza y termina correctamente
+        // Verificar estructura
         if (!privateKey.contains("BEGIN PRIVATE KEY") || !privateKey.contains("END PRIVATE KEY")) {
-            throw new IllegalStateException("❌ ERROR: El contenido de GOOGLE_PRIVATE_KEY no tiene formato PEM válido.");
+            System.out.println("⚠️ Advertencia: la clave no tiene el formato PEM esperado.");
         }
 
-        // 🧠 Crea credenciales de Google Drive
-        ServiceAccountCredentials credentials = ServiceAccountCredentials.fromPkcs8(
-                System.getenv("GOOGLE_CLIENT_ID"),
-                System.getenv("GOOGLE_CLIENT_EMAIL"),
-                privateKey,
-                null,
-                Collections.singleton(DriveScopes.DRIVE_FILE)
-        );
+        System.out.println("Longitud final de la clave: " + privateKey.length());
 
-        Drive driveService = new Drive.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                GsonFactory.getDefaultInstance(),
-                new HttpCredentialsAdapter(credentials)
-        ).setApplicationName("Tienda Virtual").build();
+        try {
+            // ✅ Crear credenciales desde variables limpias
+            ServiceAccountCredentials credentials = ServiceAccountCredentials.fromPkcs8(
+                    System.getenv("GOOGLE_CLIENT_ID"),
+                    System.getenv("GOOGLE_CLIENT_EMAIL"),
+                    privateKey,
+                    null,
+                    Collections.singleton(DriveScopes.DRIVE_FILE)
+            );
 
-        System.out.println("✅ Conexión a Google Drive inicializada correctamente.");
-        System.out.println("=============================================");
+            Drive driveService = new Drive.Builder(
+                    GoogleNetHttpTransport.newTrustedTransport(),
+                    GsonFactory.getDefaultInstance(),
+                    new HttpCredentialsAdapter(credentials)
+            ).setApplicationName("Tienda Virtual").build();
 
-        return driveService;
+            System.out.println("✅ Conexión a Google Drive inicializada correctamente.");
+            System.out.println("=============================================");
+
+            return driveService;
+        } catch (Exception e) {
+            System.out.println("❌ ERROR al inicializar Google Drive:");
+            e.printStackTrace();
+            throw e;
+        }
     }
 }
 
