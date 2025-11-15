@@ -3,6 +3,9 @@
 // ========== Estado ==========
 let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
 
+// ========== Backend base (sin dominio, solo prefijo /api) ==========
+const API_BASE = "/api";
+
 // ========== Utilidades ==========
 function guardarCarrito() {
   localStorage.setItem('carrito', JSON.stringify(carrito));
@@ -178,7 +181,7 @@ async function procesarPagoPayPal() {
   try {
     const total = carrito.reduce((s,i) => s + (Number(i.precio) * Number(i.cantidad)), 0);
 
-    const ventaRes = await fetch('https://tiendavirtual-production-88d4.up.railway.app/api/ventas', {
+    const ventaRes = await fetch(`${API_BASE}/ventas`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -191,10 +194,14 @@ async function procesarPagoPayPal() {
     if (!ventaRes.ok) throw new Error('Error al crear la venta en el servidor');
     const venta = await ventaRes.json();
 
-    const pagoRes = await fetch('https://tiendavirtual-production-88d4.up.railway.app/api/paypal/create-payment', {
+    const pagoRes = await fetch(`${API_BASE}/paypal/create-payment`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ amount: Number(total.toFixed(2)), description: `Compra - Orden #${venta.id}`, ventaId: venta.id })
+      body: JSON.stringify({
+        amount: Number(total.toFixed(2)),
+        description: `Compra - Orden #${venta.id}`,
+        ventaId: venta.id
+      })
     });
     if (!pagoRes.ok) throw new Error('Error al crear pago PayPal');
     const pagoData = await pagoRes.json();
@@ -224,7 +231,7 @@ async function procesarPagoSimulado() {
   try {
     const total = carrito.reduce((s,i) => s + (Number(i.precio) * Number(i.cantidad)), 0);
 
-    const ventaRes = await fetch('https://tiendavirtual-production-88d4.up.railway.app/api/ventas', {
+    const ventaRes = await fetch(`${API_BASE}/ventas`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -239,7 +246,9 @@ async function procesarPagoSimulado() {
 
     await new Promise(r => setTimeout(r, 2000)); // efecto de carga
 
-    const pagoRes = await fetch(`https://tiendavirtual-production-88d4.up.railway.app/api/pago-simulado/pagar?ventaId=${venta.id}`, { method: 'POST' });
+    const pagoRes = await fetch(`${API_BASE}/pago-simulado/pagar?ventaId=${venta.id}`, {
+      method: 'POST'
+    });
     if (!pagoRes.ok) throw new Error('Error al crear venta simulada');
 
     const html = await pagoRes.text();
@@ -314,5 +323,6 @@ window.eliminarDelCarrito = eliminarDelCarrito;
 window.cambiarCantidad = cambiarCantidad;
 window.vaciarCarrito = vaciarCarrito;
 window.procesarPagoPayPal = procesarPagoPayPal;
-
 window.procesarPagoSimulado = procesarPagoSimulado;
+
+
