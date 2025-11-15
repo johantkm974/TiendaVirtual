@@ -102,6 +102,8 @@
             const correo = document.getElementById("correo").value.trim();
             const contrasena = document.getElementById("contrasena").value.trim();
             const mensaje = document.getElementById("mensaje");
+            const API_URL = "/api/usuarios";
+            
     
             if (!nombre || !correo || !contrasena) {
                 mensaje.textContent = "Por favor, complete todos los campos.";
@@ -139,4 +141,5 @@
 </body>
 
 </html>
+
 
