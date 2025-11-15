@@ -96,61 +96,65 @@
         </div>
       </footer>
 
-    <script>
-        async function login() {
-            const correo = document.getElementById("correo").value.trim();
-            const contraseña = document.getElementById("contraseña").value.trim();
-            const mensaje = document.getElementById("mensaje");
+   <script>
+    const API_LOGIN = "/api/usuarios/login";
 
-            if (!correo || !contraseña) {
-                mensaje.textContent = "Por favor, complete todos los campos.";
-                return;
-            }
-            try {
-            const response = await fetch("https://tiendavirtual-production-88d4.up.railway.app/api/usuarios/login", {
+    async function login() {
+        const correo = document.getElementById("correo").value.trim();
+        const contraseña = document.getElementById("contraseña").value.trim();
+        const mensaje = document.getElementById("mensaje");
+
+        mensaje.textContent = "";
+
+        if (!correo || !contraseña) {
+            mensaje.textContent = "Por favor, complete todos los campos.";
+            return;
+        }
+
+        try {
+            const response = await fetch(API_LOGIN, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
-                correo: correo, 
-                contrasena: contraseña 
+                    correo: correo,
+                    // 👇 la clave debe ser "contrasena" sin ñ para coincidir con el backend
+                    contrasena: contraseña 
                 })
             });
 
             const data = await response.json();
 
             if (response.ok && data.id) {
-                // 🔹 Guarda el objeto completo para usar en toda la app
+                // Guardar usuario completo
                 localStorage.setItem("usuario", JSON.stringify(data));
-
-                // 🔹 También guarda nombre y correo individualmente si los quieres usar rápido
                 localStorage.setItem("usuarioNombre", data.nombre || "");
                 localStorage.setItem("usuarioEmail", data.correo || "");
 
-                // 🔹 Redirección según rol
+                // Redirección según rol
                 if (data.rol && data.rol.nombre === "Administrador") {
-                window.location.href = "productos.html";
+                    window.location.href = "productos.html";
                 } else {
-                window.location.href = "../index.html";
+                    window.location.href = "../index.html";
                 }
             } else {
-                // ✅ Error controlado
                 mensaje.textContent = data.error || "Credenciales incorrectas.";
             }
 
-            } catch (error) {
+        } catch (error) {
             console.error("Error en login:", error);
             mensaje.textContent = "Error de conexión con el servidor.";
-            }
-
         }
+    }
 
-        // ✅ Permitir login con Enter
-        document.getElementById("contraseña").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                login();
-            }
-        });
-    </script>
+    // Permitir login con Enter
+    document.getElementById("contraseña").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            login();
+        }
+    });
+</script>
+
 </body>
 
 </html>
+
