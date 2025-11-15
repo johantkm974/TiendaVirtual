@@ -1,65 +1,88 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tienda Virtual</title>
-
-  <!-- Tus estilos -->
-  <link rel="stylesheet" href="./css/nav.css">
-  <link rel="stylesheet" href="./css/index.css">
-
-  <!-- SweetAlert opcional (si lo usas para confirmaciones) -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <style>
-    /* Small helper to ensure map+form layout works if CSS missing */
-    .contacto-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-    @media (max-width:768px) { .contacto-grid { grid-template-columns:1fr; } }
-  </style>
-</head>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tienda Virtual</title>
+  
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+    <!-- Tus estilos -->
+    <link rel="stylesheet" href="./css/nav.css">
+    <link rel="stylesheet" href="./css/index.css">
+  
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+    <style>
+      .contacto-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+      @media (max-width:768px) { .contacto-grid { grid-template-columns:1fr; } }
+    </style>
+  </head>
+  
 <body>
 
   <!-- ===== HEADER ===== -->
-  <header>
-    <div class="logo">
-      <img src="./img/logo.png" alt="Logo Tienda" />
-      <h1>Tienda Virtual</h1>
-    </div>
-
-    <nav>
-      <div class="menu-toggle" id="menuToggle" aria-hidden="false">☰</div>
-      <ul id="navMenu">
-        <li><a href="#">Inicio</a></li>
-        <li class="dropdown" id="dropdownContainer">
-          <a href="#" class="dropbtn" id="productosDrop">Productos ▾</a>
-          <ul class="dropdown-content" id="dropdownCategorias">
-            <!-- categorías dinámicas se insertan aquí -->
-            <li><a href="#" data-cat="Todas">Todas</a></li>
+    <!-- ===== HEADER ===== -->
+    <header class="navbar navbar-expand-lg bg-white shadow-sm fixed-top py-2">
+      <div class="container-fluid d-flex align-items-center justify-content-between gap-3">
+  
+        <!-- Logo -->
+        <div class="logo d-flex align-items-center gap-2">
+          <img src="./img/logo.png" alt="Logo Tienda" class="rounded-circle" />
+          <h1 class="h5 mb-0 fw-bold">Tienda Virtual</h1>
+        </div>
+  
+        <!-- NAV -->
+        <nav class="flex-grow-1 position-relative">
+          <!-- Botón menú móvil (usa tu JS de siempre) -->
+          <div class="menu-toggle d-lg-none ms-auto border rounded px-2 py-1" 
+               id="menuToggle" aria-hidden="false">
+            ☰
+          </div>
+  
+          <ul id="navMenu" 
+              class="list-unstyled d-flex align-items-center justify-content-center mb-0 gap-3">
+            <li><a href="#" class="nav-link px-2">Inicio</a></li>
+  
+            <li class="dropdown" id="dropdownContainer">
+              <a href="#" class="dropbtn nav-link px-2" id="productosDrop">Productos ▾</a>
+              <ul class="dropdown-content" id="dropdownCategorias">
+                <!-- categorías dinámicas -->
+                <li><a href="#" data-cat="Todas">Todas</a></li>
+              </ul>
+            </li>
+  
+            <li><a href="#contacto" class="nav-link px-2">Contacto</a></li>
           </ul>
-        </li>
-        <li><a href="#contacto">Contacto</a></li>
-      </ul>
-    </nav>
-
-    <div class="header-actions">
-      <button id="btn-login" class="btn-login">Iniciar sesión</button>
-
-      <div class="carrito" id="carritoIcon" onclick="abrirCarrito()" aria-label="Abrir carrito" role="button" title="Carrito">
-        <svg class="carrito-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M3 3h2l1 5h13l-1.3 6.5a2 2 0 0 1-2 1.5H9" stroke="currentColor" stroke-width="1.5"/>
-          <circle cx="11" cy="20" r="1" fill="currentColor"/>
-          <circle cx="18" cy="20" r="1" fill="currentColor"/>
-        </svg>
-        <span class="carrito-count" id="carritoCount">0</span>
+        </nav>
+  
+        <!-- Acciones header -->
+        <div class="header-actions d-flex align-items-center gap-2">
+          <button id="btn-login" class="btn-login btn btn-sm">
+            Iniciar sesión
+          </button>
+  
+          <div class="carrito d-flex align-items-center" id="carritoIcon"
+               onclick="abrirCarrito()" aria-label="Abrir carrito" role="button" title="Carrito">
+            <svg class="carrito-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3 3h2l1 5h13l-1.3 6.5a2 2 0 0 1-2 1.5H9" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="11" cy="20" r="1" fill="currentColor"/>
+              <circle cx="18" cy="20" r="1" fill="currentColor"/>
+            </svg>
+            <span class="carrito-count" id="carritoCount">0</span>
+          </div>
+  
+          <div id="user-info" class="user-info" aria-live="polite" style="display:none;">
+            <span id="user-nombre"></span>
+            <button id="logout-btn" onclick="logout()">Cerrar sesión</button>
+          </div>
+        </div>
+  
       </div>
-
-      <div id="user-info" class="user-info" aria-live="polite" style="display:none;">
-        <span id="user-nombre"></span>
-        <button id="logout-btn" onclick="logout()">Cerrar sesión</button>
-      </div>
-    </div>
-  </header>
+    </header>
+  
 
   <!-- ===== CART (ASIDE) ===== -->
   <div class="overlay" id="overlay" onclick="cerrarCarrito()"></div>
@@ -93,26 +116,33 @@
   </main>
 
   <!-- ===== CONTACTO ===== -->
+  <!-- ===== CONTACTO ===== -->
   <section class="seccion-contacto" id="contacto">
-    <h2>Contáctanos</h2>
-    <div class="contacto-grid">
-      <form id="formContacto">
-        <input type="text" id="contactNombre" placeholder="Tu nombre" required>
-        <input type="email" id="contactEmail" placeholder="Tu correo" required>
-        <input type="text" id="contactAsunto" placeholder="Asunto" required>
-        <textarea id="contactMensaje" placeholder="Escribe tu mensaje..." rows="5" required></textarea>
-        <button type="submit">Enviar Mensaje</button>
-      </form>
+    <h2 class="text-center mb-3">Contáctanos</h2>
 
-      <div class="mapa-container" aria-hidden="false">
-        <!-- Mapa funcional sin API key -->
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.781813555474!2d-77.02824692477333!3d-12.046171088175997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c5f619ee3ec7%3A0x14206cb9cc452b4a!2sLima!5e0!3m2!1ses!2spe!4v1690000000000!5m2!1ses!2spe"
-          width="100%" height="100%" style="border:0; min-height:300px; border-radius:12px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
+    <div class="row contacto-grid g-4 align-items-stretch">
+      <div class="col-12 col-lg-6">
+        <form id="formContacto" class="d-flex flex-column gap-2">
+          <input type="text" id="contactNombre" class="form-control" placeholder="Tu nombre" required>
+          <input type="email" id="contactEmail" class="form-control" placeholder="Tu correo" required>
+          <input type="text" id="contactAsunto" class="form-control" placeholder="Asunto" required>
+          <textarea id="contactMensaje" class="form-control" placeholder="Escribe tu mensaje..." rows="5" required></textarea>
+          <button type="submit" class="btn btn-success w-100 mt-2">Enviar Mensaje</button>
+        </form>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="mapa-container">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.781813555474!2d-77.02824692477333!3d-12.046171088175997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c5f619ee3ec7%3A0x14206cb9cc452b4a!2sLima!5e0!3m2!1ses!2spe!4v1690000000000!5m2!1ses!2spe"
+            width="100%" height="100%" style="border:0; min-height:300px; border-radius:12px;"
+            allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
       </div>
     </div>
   </section>
+
 
   <!-- ===== FOOTER ===== -->
   <footer class="footer">
