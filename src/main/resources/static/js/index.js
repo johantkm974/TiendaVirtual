@@ -288,33 +288,46 @@ function listarProductosPorCategoria() {
 
 /* helper para crear grid html - VERSIÓN MEJORADA */
 function crearGridHTML(productos, id) {
-    return `<div class="productos-grid" id="productos-${escapeHtml(id)}">
+    return `
+      <div class="productos-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" 
+           id="productos-${escapeHtml(id)}">
         ${productos.map(p => {
-            const img = p.imagen_url
-                ? (p.imagen_url.startsWith('http') ? p.imagen_url : (p.imagen_url.startsWith('/') ? p.imagen_url : `/uploads/img/productos/${p.imagen_url}`))
-                : '/img/no-image.png';
-            
-            const stockEtiqueta = (typeof p.stock !== 'undefined') ? `<div class="stock">Stock: ${p.stock}</div>` : '';
-            
-            return `
-            <div class="producto-card" data-product-id="${p.id}">
-                <!-- 🔥 CONTENEDOR DE IMAGEN MEJORADO -->
+          const img = p.imagen_url
+            ? (p.imagen_url.startsWith('http') ? p.imagen_url 
+               : (p.imagen_url.startsWith('/') ? p.imagen_url 
+                  : `/uploads/img/productos/${p.imagen_url}`))
+            : '/img/no-image.png';
+  
+          const stockEtiqueta = (typeof p.stock !== 'undefined')
+            ? `<div class="stock">Stock: ${p.stock}</div>`
+            : '';
+  
+          return `
+            <div class="col d-flex">
+              <div class="producto-card d-flex flex-column w-100" data-product-id="${p.id}">
                 <div class="producto-imagen-container">
-                    <img src="${escapeHtml(img)}" alt="${escapeHtml(p.nombre)}" 
-                         class="producto-imagen"
-                         onerror="this.src='/img/no-image.png'">
+                  <img src="${escapeHtml(img)}" alt="${escapeHtml(p.nombre)}"
+                       class="producto-imagen"
+                       onerror="this.src='/img/no-image.png'">
                 </div>
-                <div class="producto-info">
-                    <h3>${escapeHtml(p.nombre)}</h3>
-                    <p>${escapeHtml(p.descripcion || '')}</p>
-                    <div class="precio">S/ ${Number(p.precio || 0).toFixed(2)}</div>
-                    ${stockEtiqueta}
-                    <button class="btn-comprar" data-product-id="${p.id}">🛒 Agregar al carrito</button>
+                <div class="producto-info d-flex flex-column flex-grow-1">
+                  <h3>${escapeHtml(p.nombre)}</h3>
+                  <p>${escapeHtml(p.descripcion || '')}</p>
+                  <div class="precio">S/ ${Number(p.precio || 0).toFixed(2)}</div>
+                  ${stockEtiqueta}
+                  <button class="btn-comprar btn btn-primary mt-auto w-100" 
+                          data-product-id="${p.id}">
+                    🛒 Agregar al carrito
+                  </button>
                 </div>
-            </div>`;
+              </div>
+            </div>
+          `;
         }).join('')}
-    </div>`;
-}
+      </div>
+    `;
+  }
+  
 
 /* attach listeners a botones comprar actuales */
 function attachComprarListeners() {
