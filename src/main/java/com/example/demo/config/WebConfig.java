@@ -15,7 +15,7 @@ public class WebConfig implements WebMvcConfigurer {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
                         .allowedOriginPatterns(
-                                "https://tiendavirtual-production-88d4.up.railway.app",
+                                "https://tiendavirtual-production-3800.up.railway.app",
                                 "http://localhost:5500",
                                 "http://127.0.0.1:5500"
                         )
@@ -26,3 +26,4 @@ public class WebConfig implements WebMvcConfigurer {
         };
     }
 }
+
