@@ -1,160 +1,209 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iniciar Sesión</title>
-    <link rel="stylesheet" href="../css/login.css">
 
-    
+    <!-- BOOTSTRAP 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+
+    <!-- TU CSS PERSONAL -->
+    <link rel="stylesheet" href="../css/login.css" />
 </head>
 <body>
-    <header>
-        <div class="logo">
-          <img src="./img/logo.png" alt="Logo Tienda" />
-          <h1>Tienda Virtual</h1>
-        </div>
-    
-        <nav>
-          <div class="menu-toggle" id="menuToggle" aria-hidden="false"></div>
-          <ul id="navMenu">
-            <li><a href="#">Inicio</a></li>
+    <!-- HEADER / NAVBAR -->
+    <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+          <img src="./img/logo.png" alt="Logo Tienda" class="me-2" style="width:46px; height:46px; object-fit:cover;" />
+          <span class="fw-bold">Tienda Virtual</span>
+        </a>
 
-            <li><a href="#contacto">Contacto</a></li>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarTienda"
+          aria-controls="navbarTienda"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarTienda">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Inicio</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#contacto">Contacto</a>
+            </li>
           </ul>
-        </nav>
-    
-      </header>
-    <div class="contenedor">
-        <h1>Iniciar Sesión</h1>
-        <input type="email" id="correo" placeholder="Correo electrónico" required>
-        <input type="password" id="contraseña" placeholder="Contraseña" required>
-        <button onclick="login()">Ingresar</button>
-        <p class="mensaje" id="mensaje"></p>
-        <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
-    </div>
-<!-- ===== CONTACTO ===== -->
-<section class="seccion-contacto" id="contacto">
-    <h2>Contáctanos</h2>
-    <div class="contacto-grid">
-      <form id="formContacto">
-        <input type="text" id="contactNombre" placeholder="Tu nombre" required>
-        <input type="email" id="contactEmail" placeholder="Tu correo" required>
-        <input type="text" id="contactAsunto" placeholder="Asunto" required>
-        <textarea id="contactMensaje" placeholder="Escribe tu mensaje..." rows="5" required></textarea>
-        <button type="submit">Enviar Mensaje</button>
-      </form>
-
-      <div class="mapa-container" aria-hidden="false">
-        <!-- Mapa funcional sin API key -->
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.781813555474!2d-77.02824692477333!3d-12.046171088175997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c5f619ee3ec7%3A0x14206cb9cc452b4a!2sLima!5e0!3m2!1ses!2spe!4v1690000000000!5m2!1ses!2spe"
-          width="100%" height="100%" style="border:0; min-height:300px; border-radius:12px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
+        </div>
       </div>
-    </div>
-  </section>
+    </header>
 
-    <footer class="footer">
-        <div class="footer-content">
-          <div class="footer-section">
-            <h3>Tienda Virtual</h3>
-            <p>Tu tienda de confianza para compras en línea</p>
-            <div class="social-links">
-              <a href="#" aria-label="Facebook">📘 Facebook</a>
-              <a href="#" aria-label="Instagram">📷 Instagram</a>
-              <a href="#" aria-label="WhatsApp">💬 WhatsApp</a>
+    <!-- MAIN -->
+    <main class="pt-5 mt-4">
+      <!-- LOGIN -->
+      <section class="py-5">
+        <div class="container">
+          <div class="contenedor mx-auto">
+              <h1>Iniciar Sesión</h1>
+              <input type="email" id="correo" placeholder="Correo electrónico" required>
+              <input type="password" id="contraseña" placeholder="Contraseña" required>
+              <button onclick="login()">Ingresar</button>
+              <p class="mensaje" id="mensaje"></p>
+              <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CONTACTO ===== -->
+      <section class="seccion-contacto" id="contacto">
+        <div class="container">
+          <h2>Contáctanos</h2>
+          <div class="row g-4 align-items-stretch">
+            <div class="col-md-6">
+              <form id="formContacto">
+                <input type="text" id="contactNombre" placeholder="Tu nombre" required>
+                <input type="email" id="contactEmail" placeholder="Tu correo" required>
+                <input type="text" id="contactAsunto" placeholder="Asunto" required>
+                <textarea id="contactMensaje" placeholder="Escribe tu mensaje..." rows="5" required></textarea>
+                <button type="submit">Enviar Mensaje</button>
+              </form>
+            </div>
+
+            <div class="col-md-6">
+              <div class="mapa-container" aria-hidden="false">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.781813555474!2d-77.02824692477333!3d-12.046171088175997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c5f619ee3ec7%3A0x14206cb9cc452b4a!2sLima!5e0!3m2!1ses!2spe!4v1690000000000!5m2!1ses!2spe"
+                  width="100%" height="100%" style="border:0; min-height:300px; border-radius:12px;" 
+                  allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+              </div>
             </div>
           </div>
-          
-          <div class="footer-section">
-            <h4>Enlaces Rápidos</h4>
-            <ul>
-              <li><a href="#">Inicio</a></li>
-              <li><a href="#contacto">Contacto</a></li>
-              <li><a href="./html/login.html">Iniciar Sesión</a></li>
-            </ul>
-          </div>
-          
-          <div class="footer-section">
-            <h4>Contacto</h4>
-            <p>📧 info@tiendavirtual.com</p>
-            <p>📞 +51 987 654 321</p>
-            <p>📍 Lima, Perú</p>
-          </div>
-          
-          <div class="footer-section">
-            <h4>Horario de Atención</h4>
-            <p>Lunes a Viernes: 9:00 AM - 7:00 PM</p>
-            <p>Sábados: 9:00 AM - 2:00 PM</p>
-            <p>Domingos: Cerrado</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Tienda Virtual</h3>
+          <p>Tu tienda de confianza para compras en línea</p>
+          <div class="social-links">
+            <a href="#" aria-label="Facebook">📘 Facebook</a>
+            <a href="#" aria-label="Instagram">📷 Instagram</a>
+            <a href="#" aria-label="WhatsApp">💬 WhatsApp</a>
           </div>
         </div>
         
-        <div class="footer-bottom">
-          <p>&copy; 2024 Tienda Virtual. Todos los derechos reservados.</p>
+        <div class="footer-section">
+          <h4>Enlaces Rápidos</h4>
+          <ul>
+            <li><a href="#">Inicio</a></li>
+            <li><a href="#contacto">Contacto</a></li>
+            <li><a href="./html/login.html">Iniciar Sesión</a></li>
+          </ul>
         </div>
-      </footer>
+        
+        <div class="footer-section">
+          <h4>Contacto</h4>
+          <p>📧 info@tiendavirtual.com</p>
+          <p>📞 +51 987 654 321</p>
+          <p>📍 Lima, Perú</p>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Horario de Atención</h4>
+          <p>Lunes a Viernes: 9:00 AM - 7:00 PM</p>
+          <p>Sábados: 9:00 AM - 2:00 PM</p>
+          <p>Domingos: Cerrado</p>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 Tienda Virtual. Todos los derechos reservados.</p>
+      </div>
+    </footer>
 
-   <script>
-    const API_LOGIN = "/api/usuarios/login";
+    <!-- BOOTSTRAP 5 JS (NECESARIO PARA EL MENÚ RESPONSIVE) -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous">
+    </script>
 
-    async function login() {
-        const correo = document.getElementById("correo").value.trim();
-        const contraseña = document.getElementById("contraseña").value.trim();
-        const mensaje = document.getElementById("mensaje");
+    <!-- TU LÓGICA DE LOGIN (SIN CAMBIOS) -->
+    <script>
+      const API_LOGIN = "/api/usuarios/login";
 
-        mensaje.textContent = "";
+      async function login() {
+          const correo = document.getElementById("correo").value.trim();
+          const contraseña = document.getElementById("contraseña").value.trim();
+          const mensaje = document.getElementById("mensaje");
 
-        if (!correo || !contraseña) {
-            mensaje.textContent = "Por favor, complete todos los campos.";
-            return;
-        }
+          mensaje.textContent = "";
 
-        try {
-            const response = await fetch(API_LOGIN, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    correo: correo,
-                    // 👇 la clave debe ser "contrasena" sin ñ para coincidir con el backend
-                    contrasena: contraseña 
-                })
-            });
+          if (!correo || !contraseña) {
+              mensaje.textContent = "Por favor, complete todos los campos.";
+              return;
+          }
 
-            const data = await response.json();
+          try {
+              const response = await fetch(API_LOGIN, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ 
+                      correo: correo,
+                      // 👇 la clave debe ser "contrasena" sin ñ para coincidir con el backend
+                      contrasena: contraseña 
+                  })
+              });
 
-            if (response.ok && data.id) {
-                // Guardar usuario completo
-                localStorage.setItem("usuario", JSON.stringify(data));
-                localStorage.setItem("usuarioNombre", data.nombre || "");
-                localStorage.setItem("usuarioEmail", data.correo || "");
+              const data = await response.json();
 
-                // Redirección según rol
-                if (data.rol && data.rol.nombre === "Administrador") {
-                    window.location.href = "productos.html";
-                } else {
-                    window.location.href = "../index.html";
-                }
-            } else {
-                mensaje.textContent = data.error || "Credenciales incorrectas.";
-            }
+              if (response.ok && data.id) {
+                  // Guardar usuario completo
+                  localStorage.setItem("usuario", JSON.stringify(data));
+                  localStorage.setItem("usuarioNombre", data.nombre || "");
+                  localStorage.setItem("usuarioEmail", data.correo || "");
 
-        } catch (error) {
-            console.error("Error en login:", error);
-            mensaje.textContent = "Error de conexión con el servidor.";
-        }
-    }
+                  // Redirección según rol
+                  if (data.rol && data.rol.nombre === "Administrador") {
+                      window.location.href = "productos.html";
+                  } else {
+                      window.location.href = "../index.html";
+                  }
+              } else {
+                  mensaje.textContent = data.error || "Credenciales incorrectas.";
+              }
 
-    // Permitir login con Enter
-    document.getElementById("contraseña").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            login();
-        }
-    });
-</script>
+          } catch (error) {
+              console.error("Error en login:", error);
+              mensaje.textContent = "Error de conexión con el servidor.";
+          }
+      }
 
+      // Permitir login con Enter
+      document.getElementById("contraseña").addEventListener("keypress", function(event) {
+          if (event.key === "Enter") {
+              login();
+          }
+      });
+    </script>
 </body>
-
 </html>
+
+
 
