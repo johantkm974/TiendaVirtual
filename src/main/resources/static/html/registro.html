@@ -176,6 +176,7 @@
                 if (response.ok) {
                     const usuario = await response.json();
                     alert("Registro exitoso. Bienvenido " + usuario.nombre + "!");
+                    window.location.href = "login.html";
                 } else {
                     mensaje.textContent = "No se pudo registrar. Intente otra vez.";
                 }
@@ -198,6 +199,7 @@
     </script>
 </body>
 </html>
+
 
 
 
