@@ -84,7 +84,7 @@ function listarProductos(categoriaId = "") {
     .then(res => res.json())
     .then(data => {
       if (categoriaId) {
-        data = data.filter(p => p.categoriaId == categoriaId);
+        data = data.filter(p => p.categoria && p.categoria.id == categoriaId);
       }
 
       tabla.innerHTML = "";
@@ -248,6 +248,7 @@ window.addEventListener("load", () => {
   loader.classList.add("oculto");
   setTimeout(() => loader.style.display = "none", 500);
 });
+
 
 
 
