@@ -1,92 +1,88 @@
 let todasLasVentas = [];
 
-// ================================
-// API BASE
-// ================================
 const API_BASE = "/api";
 
-// ================================
-// Cambiar Sección
-// ================================
+/* =======================================
+   CAMBIAR SECCIÓN
+======================================= */
 function mostrarSeccion(id) {
   document.querySelectorAll(".seccion").forEach(s => s.classList.remove("visible"));
   document.getElementById(id).classList.add("visible");
+
   if (id === "usuarios") cargarUsuarios();
   if (id === "ventas") cargarVentas();
 }
 
-// ================================
-// Cargar Usuarios + Agregar Botón EDITAR
-// ================================
+/* =======================================
+   CARGAR USUARIOS
+======================================= */
 async function cargarUsuarios() {
   const tabla = document.querySelector("#tablaUsuarios tbody");
   tabla.innerHTML = "";
+
   try {
     const res = await fetch(`${API_BASE}/usuarios`);
     const usuarios = await res.json();
 
     usuarios.forEach(u => {
-      const esAdmin = u.rol && (u.rol.id === 1 || u.rol.nombre?.toUpperCase() === "ADMINISTRADOR");
+      const esAdmin = u.rol?.nombre?.toUpperCase() === "ADMINISTRADOR";
 
       const fila = document.createElement("tr");
+
       fila.innerHTML = `
         <td>${u.id}</td>
         <td>${u.nombre}</td>
         <td>${u.correo}</td>
         <td>${esAdmin ? "Administrador" : "Cliente"}</td>
         <td>
-
-          <!-- BOTÓN EDITAR -->
           <button class="btn btn-editar"
-              onclick="abrirModal(${u.id}, '${u.nombre}', '${u.correo}', ${esAdmin})"
-              ${esAdmin ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
-              ✏ Editar
+            onclick="abrirModal(${u.id}, '${u.nombre}', '${u.correo}', ${esAdmin})"
+            ${esAdmin ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+            ✏ Editar
           </button>
 
-          <!-- BOTÓN ELIMINAR (solo clientes) -->
-          ${esAdmin
-            ? ""
-            : `<button class="btn btn-eliminar" onclick="eliminarUsuario(${u.id})">🗑 Eliminar</button>`
-          }
-
+          ${esAdmin ? "" : `
+            <button class="btn btn-eliminar" onclick="eliminarUsuario(${u.id})">
+              🗑 Eliminar
+            </button>`}
         </td>
       `;
+
       tabla.appendChild(fila);
     });
   } catch (error) {
-    document.getElementById("mensaje").textContent = "Error al cargar usuarios.";
-    console.error(error);
+    console.error("Error al cargar usuarios:", error);
   }
 }
 
-// ================================
-// Abrir Modal Edición
-// ================================
+/* =======================================
+   ABRIR / CERRAR MODAL
+======================================= */
 function abrirModal(id, nombre, correo, esAdmin) {
   if (esAdmin) {
-    Swal.fire("No permitido", "No puedes editar al Administrador", "error");
+    Swal.fire("Prohibido", "No puedes editar al Administrador", "error");
     return;
   }
 
-  document.getElementById('editId').value = id;
-  document.getElementById('editNombre').value = nombre;
-  document.getElementById('editCorreo').value = correo;
+  document.getElementById("editId").value = id;
+  document.getElementById("editNombre").value = nombre;
+  document.getElementById("editCorreo").value = correo;
 
-  document.getElementById('modalEditar').style.display = "flex";
+  document.getElementById("modalEditar").style.display = "flex";
 }
 
 function cerrarModal() {
-  document.getElementById('modalEditar').style.display = "none";
+  document.getElementById("modalEditar").style.display = "none";
 }
 
-// ================================
-// Guardar Cambios Usuario (PUT)
-// ================================
+/* =======================================
+   GUARDAR CAMBIOS
+======================================= */
 async function guardarCambiosUsuario() {
-  const id = document.getElementById('editId').value;
-  const nombre = document.getElementById('editNombre').value;
-  const correo = document.getElementById('editCorreo').value;
-  const contrasena = document.getElementById('editContrasena').value;
+  const id = document.getElementById("editId").value;
+  const nombre = document.getElementById("editNombre").value;
+  const correo = document.getElementById("editCorreo").value;
+  const contrasena = document.getElementById("editContrasena").value;
 
   try {
     const res = await fetch(`${API_BASE}/usuarios/${id}`, {
@@ -101,45 +97,43 @@ async function guardarCambiosUsuario() {
       return;
     }
 
-    Swal.fire("Éxito", "Usuario actualizado correctamente", "success");
+    Swal.fire("Éxito", "Usuario actualizado", "success");
     cerrarModal();
     cargarUsuarios();
   } catch (error) {
-    Swal.fire("Error", "No se pudo actualizar el usuario", "error");
-    console.error(error);
+    Swal.fire("Error", "Hubo un problema al actualizar", "error");
   }
 }
 
-// ================================
-// Eliminar Usuario
-// ================================
+/* =======================================
+   ELIMINAR USUARIO
+======================================= */
 async function eliminarUsuario(id) {
-  if (!confirm("¿Seguro que deseas eliminar este usuario?")) return;
+  if (!confirm("¿Eliminar usuario?")) return;
 
   try {
     const res = await fetch(`${API_BASE}/usuarios/${id}`, { method: "DELETE" });
-    const data = await res.text();
-    alert(data);
+    const msg = await res.text();
+    alert(msg);
     cargarUsuarios();
   } catch (error) {
     alert("Error al eliminar usuario.");
-    console.error(error);
   }
 }
 
-// ================================
-// Cargar Ventas
-// ================================
+/* =======================================
+   VENTAS
+======================================= */
 async function cargarVentas() {
   const tabla = document.querySelector("#tablaVentas tbody");
   tabla.innerHTML = "";
+
   try {
     const res = await fetch(`${API_BASE}/ventas`);
     todasLasVentas = await res.json();
     mostrarVentas(todasLasVentas);
   } catch (error) {
-    document.getElementById("mensaje").textContent = "Error al cargar ventas.";
-    console.error(error);
+    console.error("Error cargando ventas:", error);
   }
 }
 
@@ -157,75 +151,25 @@ function mostrarVentas(ventas) {
       <td>${v.estadoPago || "Pendiente"}</td>
       <td>
         ${v.estadoPago === "APROBADO"
-          ? `<button class="btn btn-ver" onclick="verRecibo(${v.id})">📄 Ver PDF</button>`
-          : `<button class="btn btn-confirmar" onclick="confirmarPago(${v.id})">✅ Confirmar</button>`}
-        <button class="btn btn-eliminar" onclick="eliminarVenta(${v.id})">🗑 Eliminar</button>
+          ? `<button class="btn btn-ver" onclick="verRecibo(${v.id})">📄 PDF</button>`
+          : `<button class="btn btn-confirmar" onclick="confirmarPago(${v.id})">Confirmar</button>`
+        }
       </td>
     `;
     tabla.appendChild(fila);
   });
 }
 
-// ================================
-// Filtros y otros
-// ================================
+/* ======================================= */
 document.addEventListener("DOMContentLoaded", () => {
-  mostrarSeccion('usuarios');
+  mostrarSeccion("usuarios");
 });
 
-function filtrarVentas() {
-  const termino = document.getElementById("busquedaUsuario").value.trim().toLowerCase();
-  if (!termino) return mostrarVentas(todasLasVentas);
-
-  const filtradas = todasLasVentas.filter(v =>
-    (v.usuario && (v.usuario.nombre.toLowerCase().includes(termino) || v.usuario.id.toString().includes(termino)))
-  );
-
-  if (filtradas.length === 0) alert("No se encontraron ventas para este usuario.");
-
-  mostrarVentas(filtradas);
-}
-
-async function confirmarPago(ventaId) {
-  const paymentId = prompt("Ingrese el Payment ID (o vacío si no aplica):");
-  if (paymentId === null) return;
-
-  try {
-    const res = await fetch(`${API_BASE}/ventas/confirmar-pago`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ paymentId: paymentId || "MANUAL", ventaId })
-    });
-
-    const data = await res.json();
-    alert(data.message || "Pago confirmado.");
-    cargarVentas();
-  } catch (error) {
-    alert("Error al confirmar pago.");
-    console.error(error);
-  }
-}
-
-function verRecibo(id) {
-  window.open(`${API_BASE}/ventas/${id}/recibo`, "_blank");
-}
-
-async function eliminarVenta(id) {
-  if (!confirm("¿Seguro que deseas eliminar esta venta?")) return;
-  try {
-    const res = await fetch(`${API_BASE}/ventas/${id}`, { method: "DELETE" });
-    const data = await res.json().catch(() => ({}));
-    alert(data.message || data.error || "Venta eliminada.");
-    cargarVentas();
-  } catch (error) {
-    alert("Error al eliminar venta.");
-    console.error(error);
-  }
-}
 
 
 
   
+
 
 
 
