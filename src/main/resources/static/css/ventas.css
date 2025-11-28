@@ -394,6 +394,24 @@ footer {
   background: linear-gradient(135deg,#34495e,#2c3e50);
 }
 
+/* ===== BOTÓN EDITAR ===== */
+.btn-editar {
+  background-color: #f39c12;
+  color: white;
+  border: none;
+  padding: 7px 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.btn-editar:hover {
+  background-color: #d68910;
+}
+
+
 /* Usuario y logout */
 .user-info {
   display: none;
@@ -534,4 +552,5 @@ footer {
   .social-links {
       justify-content: center;
   }
+
 }
