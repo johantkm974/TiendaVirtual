@@ -14,7 +14,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/ventas")
-
 public class VentaController {
 
     private final VentaService ventaService;
@@ -34,7 +33,9 @@ public class VentaController {
         this.emailService = emailService;
     }
 
-    // ✅ Crear venta con detalles
+    // ================================
+    //   CREAR VENTA + DETALLES
+    // ================================
     @PostMapping
     public ResponseEntity<?> crearVenta(@RequestBody Map<String, Object> request) {
         try {
@@ -42,26 +43,24 @@ public class VentaController {
             Integer metodoPagoId = (Integer) request.get("metodoPagoId");
 
             @SuppressWarnings("unchecked")
-            List<Map<String, Object>> detallesRequest = (List<Map<String, Object>>) request.get("detalles");
+            List<Map<String, Object>> detallesRequest =
+                    (List<Map<String, Object>>) request.get("detalles");
 
             List<DetalleVenta> detalles = new ArrayList<>();
 
-            for (Map<String, Object> detalleRequest : detallesRequest) {
-                Integer productoId = (Integer) detalleRequest.get("productoId");
-                Integer cantidad = (Integer) detalleRequest.get("cantidad");
+            for (Map<String, Object> det : detallesRequest) {
+                Integer productoId = (Integer) det.get("productoId");
+                Integer cantidad = (Integer) det.get("cantidad");
 
                 Producto producto = productoService.buscarPorId(productoId);
-                if (producto == null) throw new RuntimeException("Producto no encontrado: " + productoId);
+                if (producto == null)
+                    throw new RuntimeException("Producto no encontrado: " + productoId);
 
-                Double precioUnitario = producto.getPrecio();
-                if (precioUnitario == null)
-                    throw new RuntimeException("El producto '" + producto.getNombre() + "' no tiene precio definido.");
-
-                DetalleVenta detalle = new DetalleVenta();
-                detalle.setProducto(producto);
-                detalle.setCantidad(cantidad);
-                detalle.setPrecioUnitario(precioUnitario);
-                detalles.add(detalle);
+                DetalleVenta d = new DetalleVenta();
+                d.setProducto(producto);
+                d.setCantidad(cantidad);
+                d.setPrecioUnitario(producto.getPrecio());
+                detalles.add(d);
             }
 
             Venta venta = ventaService.crearVenta(usuarioId, metodoPagoId, detalles);
@@ -74,7 +73,9 @@ public class VentaController {
         }
     }
 
-    // ✅ Procesar venta y enviar PDF al correo
+    // ================================
+    //   PROCESAR VENTA (PDF + CORREO)
+    // ================================
     @PostMapping("/procesar")
     public ResponseEntity<Map<String, Object>> procesarVenta(@RequestBody Venta venta) {
         try {
@@ -82,29 +83,32 @@ public class VentaController {
 
             String pdfPath = pdfService.generarReciboPDF(ventaGuardada);
 
-            if (ventaGuardada.getUsuario() != null && ventaGuardada.getUsuario().getCorreo() != null) {
+            if (ventaGuardada.getUsuario() != null &&
+                    ventaGuardada.getUsuario().getCorreo() != null) {
+
                 emailService.enviarCorreoConAdjunto(
                         ventaGuardada.getUsuario().getCorreo(),
                         "Recibo de tu compra #" + ventaGuardada.getId(),
-                        "<h2>Gracias por tu compra</h2><p>Adjunto encontrarás tu recibo en formato PDF.</p>",
+                        "<h2>Gracias por tu compra</h2><p>Adjunto encontrarás tu recibo en PDF.</p>",
                         pdfPath
                 );
             }
 
             return ResponseEntity.ok(Map.of(
                     "status", "APPROVED",
-                    "message", "Pago realizado y recibo enviado al correo.",
+                    "message", "Pago realizado y correo enviado.",
                     "ventaId", ventaGuardada.getId()
             ));
 
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", e.getMessage()));
         }
     }
 
-    // ✅ Confirmar pago (PayPal o manual) → genera PDF y lo envía
+    // ================================
+    //   CONFIRMAR PAGO + PDF + EMAIL
+    // ================================
     @PostMapping("/confirmar-pago")
     public ResponseEntity<Map<String, Object>> confirmarPago(@RequestBody Map<String, Object> data) {
         try {
@@ -116,17 +120,24 @@ public class VentaController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Venta no encontrada"));
             }
 
+            // 🔥 Actualizar la venta
             venta.setEstadoPago("APROBADO");
             venta.setPaymentId(paymentId);
+
             ventaService.save(venta);
 
+            // 🔥 RECARGAR DESDE BD (IMPORTANTE)
+            venta = ventaService.findById(ventaId).orElseThrow();
+
+            // 🔥 Generar PDF con datos ACTUALIZADOS
             String pdfPath = pdfService.generarReciboPDF(venta);
 
+            // Enviar correo
             if (venta.getUsuario() != null && venta.getUsuario().getCorreo() != null) {
                 emailService.enviarCorreoConAdjunto(
                         venta.getUsuario().getCorreo(),
                         "Comprobante de pago - Orden #" + venta.getId(),
-                        "<h2>¡Gracias por tu compra!</h2><p>Adjuntamos tu recibo en formato PDF.</p>",
+                        "<h2>¡Gracias por tu compra!</h2><p>Adjuntamos tu comprobante.</p>",
                         pdfPath
                 );
             }
@@ -138,13 +149,14 @@ public class VentaController {
             ));
 
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", e.getMessage()));
         }
     }
 
-    // ✅ Descargar PDF del recibo directamente desde el navegador
+    // ================================
+    //   DESCARGAR PDF
+    // ================================
     @GetMapping("/{id}/recibo")
     public ResponseEntity<?> descargarRecibo(@PathVariable Integer id) {
         try {
@@ -160,57 +172,63 @@ public class VentaController {
             File archivo = new File(pdfPath);
             if (!archivo.exists()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "No se encontró el PDF generado."));
+                        .body(Map.of("error", "PDF no encontrado"));
             }
 
             FileSystemResource resource = new FileSystemResource(archivo);
+
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentDisposition(ContentDisposition.builder("inline")
-                    .filename("recibo_venta_" + id + ".pdf")
-                    .build());
+            headers.setContentDisposition(
+                    ContentDisposition.inline().filename("recibo_venta_" + id + ".pdf").build()
+            );
             headers.setContentType(MediaType.APPLICATION_PDF);
 
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(resource);
+            return ResponseEntity.ok().headers(headers).body(resource);
 
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", e.getMessage()));
         }
     }
 
-    // ✅ Obtener todas las ventas
+    // ================================
+    //   LISTAR TODAS
+    // ================================
     @GetMapping
     public ResponseEntity<List<Venta>> obtenerTodas() {
         return ResponseEntity.ok(ventaService.findAll());
     }
 
-    // ✅ Obtener venta por ID
+    // ================================
+    //   OBTENER POR ID
+    // ================================
     @GetMapping("/{id}")
     public ResponseEntity<Venta> obtenerPorId(@PathVariable Integer id) {
         return ventaService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    // ✅ Eliminar venta por ID
-@DeleteMapping("/{id}")
-public ResponseEntity<?> eliminarVenta(@PathVariable Integer id) {
-    try {
-        boolean eliminado = ventaService.eliminarPorId(id);
-        if (eliminado) {
+
+    // ================================
+    //   ELIMINAR
+    // ================================
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarVenta(@PathVariable Integer id) {
+        try {
+            boolean eliminado = ventaService.eliminarPorId(id);
+
+            if (!eliminado) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Venta no encontrada"));
+            }
+
             return ResponseEntity.ok(Map.of("message", "Venta eliminada correctamente"));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Venta no encontrada"));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
         }
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Error al eliminar venta: " + e.getMessage()));
     }
 }
 
 
-
-}
