@@ -1,200 +1,165 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Gestión de Productos - Tienda Virtual</title>
 
-  <!-- BOOTSTRAP -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap para responsive básico -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
-  <!-- SWEETALERT -->
+  <!-- CSS de navegación / header -->
+
+
+  <!-- CSS propio del panel -->
+  <link rel="stylesheet" href="../css/productos.css">
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <link rel="stylesheet" href="../css/productos.css">  
-  <link rel="stylesheet" href="../css/ventas.css">
-
 </head>
-<body class="bg-light">
 
-<!-- =========== NAVBAR =========== -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
-  <div class="container-fluid">
+<body>
 
-    <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-      <img src="/img/logo.png" width="40" alt="">
-      <strong>Tienda Virtual</strong>
-    </a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
-            data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNav">
-
-      <ul class="navbar-nav mx-auto">
-        <li class="nav-item"><a class="nav-link" href="../index.html">Inicio</a></li>
-        <li class="nav-item"><a class="nav-link active" href="./productos.html">Gestionar Productos</a></li>
-        <li class="nav-item"><a class="nav-link" href="./gestion_ventas.html">Gestionar Ventas</a></li>
-      </ul>
-
-      <div id="headerActions"></div>
-
-    </div>
+  <!-- Loader -->
+  <div class="loader-overlay" id="loader">
+    <div class="loader"></div>
   </div>
-</nav>
 
-<div class="container mt-5 pt-5">
+  <!-- ===================================================== -->
+  <!--                     HEADER / NAV                     -->
+  <!-- ===================================================== -->
+  <header class="header">
+      <div class="logo">
+          <img src="/img/logo.png" alt="Logo Tienda">
+          <h1>Tienda Virtual</h1>
+      </div>
 
-  <h1 class="text-center mb-4 fw-bold text-dark">Gestión de Productos</h1>
+      <nav>
+          <ul>
+              <li><a href="../index.html">Inicio</a></li>
+              <li><a href="./productos.html">Gestionar Productos</a></li>
+              <li><a href="./gestion_ventas.html">Gestionar Ventas</a></li>
+          </ul>
+      </nav>
 
-  <!-- ACCIONES -->
-  <div class="row mb-4">
-    <div class="col-md-4 mb-2">
-      <select id="filtroCategoria" class="form-select">
+      <div class="header-actions" id="headerActions"></div>
+  </header>
+
+  <!-- ===================================================== -->
+  <!--                  TÍTULO PRINCIPAL                     -->
+  <!-- ===================================================== -->
+  <h1>Gestión de Productos</h1>
+
+  <!-- ===================================================== -->
+  <!--                     ACCIONES                          -->
+  <!-- ===================================================== -->
+  <div class="acciones">
+      <select id="filtroCategoria" class="form-select" style="max-width: 250px;">
         <option value="">Todas las categorías</option>
       </select>
-    </div>
 
-    <div class="col-md-4"></div>
-
-    <div class="col-md-4 text-end">
       <button id="btnAgregar" class="btn btn-success">
         ➕ Agregar Producto
       </button>
-    </div>
   </div>
 
-  <!-- TABLA RESPONSIVE -->
-  <div class="table-responsive shadow-sm rounded bg-white p-3">
-    <table class="table table-hover align-middle" id="tablaProductos">
-      <thead class="table-dark">
-        <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Precio</th>
-          <th>Stock</th>
-          <th>Categoría</th>
-          <th>Imagen</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <!-- ===================================================== -->
+  <!--                     TABLA PRODUCTOS                    -->
+  <!-- ===================================================== -->
+  <div class="table-wrapper">
+      <table id="tablaProductos">
+          <thead>
+              <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Categoría</th>
+                  <th>Imagen</th>
+                  <th>Acciones</th>
+              </tr>
+          </thead>
+          <tbody></tbody>
+      </table>
   </div>
 
-</div>
+  <!-- ===================================================== -->
+  <!--                        MODAL                           -->
+  <!-- ===================================================== -->
+  <div class="modal" id="modalProducto">
+      <div class="modal-content">
+          <span class="close" id="cerrarModal">&times;</span>
+          <h2 id="tituloModal">Nuevo Producto</h2>
 
-<!-- ===========================
-        MODAL BOOTSTRAP
-=========================== -->
-<div class="modal fade" id="modalProducto" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+          <form id="productoForm">
+              <input type="hidden" id="id">
 
-      <div class="modal-header">
-        <h5 class="modal-title" id="tituloModal">Nuevo Producto</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              <input type="text" id="nombre" placeholder="Nombre" required>
+              <input type="text" id="descripcion" placeholder="Descripción">
+
+              <input type="number" id="precio" placeholder="Precio" step="any" required>
+              <input type="number" id="stock" placeholder="Stock" required>
+
+              <!-- CATEGORÍAS -->
+              <select name="categoria.id" id="categoriaSelect" required></select>
+
+              <!-- IMAGEN -->
+              <input type="hidden" id="imagenActual">
+              <input type="file" id="imagen" accept="image/*">
+
+              <img id="imagenPreview" src="" style="display:none;">
+
+              <button type="submit" class="btn btn-success mt-3">Guardar</button>
+          </form>
+      </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!--                        FOOTER                          -->
+  <!-- ===================================================== -->
+  <footer class="footer">
+      <div class="footer-content">
+          <div class="footer-section">
+              <h3>Tienda Virtual</h3>
+              <p>Tu tienda de confianza para compras en línea.</p>
+              <div class="social-links">
+                  <a href="#">📘 Facebook</a>
+                  <a href="#">📷 Instagram</a>
+                  <a href="#">💬 WhatsApp</a>
+              </div>
+          </div>
+
+          <div class="footer-section">
+              <h4>Enlaces Rápidos</h4>
+              <ul>
+                  <li><a href="../index.html">Inicio</a></li>
+                  <li><a href="#contacto">Contacto</a></li>
+                  <li><a href="./login.html">Iniciar Sesión</a></li>
+              </ul>
+          </div>
+
+          <div class="footer-section">
+              <h4>Contacto</h4>
+              <p>📧 info@tiendavirtual.com</p>
+              <p>📞 +51 987 654 321</p>
+              <p>📍 Lima, Perú</p>
+          </div>
+
+          <div class="footer-section">
+              <h4>Horario de Atención</h4>
+              <p>Lunes a Viernes: 9:00 AM - 7:00 PM</p>
+              <p>Sábados: 9:00 AM - 2:00 PM</p>
+              <p>Domingos: Cerrado</p>
+          </div>
       </div>
 
-      <div class="modal-body">
-
-        <form id="productoForm">
-          <input type="hidden" id="id">
-
-          <div class="mb-2">
-            <label>Nombre</label>
-            <input type="text" id="nombre" class="form-control" required>
-          </div>
-
-          <div class="mb-2">
-            <label>Descripción</label>
-            <input type="text" id="descripcion" class="form-control">
-          </div>
-
-          <div class="row">
-            <div class="col-6 mb-2">
-              <label>Precio</label>
-              <input type="number" step="any" id="precio" class="form-control" required>
-            </div>
-
-            <div class="col-6 mb-2">
-              <label>Stock</label>
-              <input type="number" id="stock" class="form-control" required>
-            </div>
-          </div>
-
-          <div class="mb-2">
-            <label>Categoría</label>
-            <select name="categoria.id" class="form-select" required></select>
-          </div>
-
-          <div class="mb-2">
-            <input type="hidden" id="imagenActual">
-            <label>Imagen (opcional)</label>
-            <input type="file" id="imagen" accept="image/*" class="form-control">
-          </div>
-
-          <div class="text-center">
-            <img id="imagenPreview" src="" class="img-thumbnail mt-2" style="display:none; width:140px; height:140px; object-fit:cover;">
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100 mt-3">Guardar</button>
-
-        </form>
-
+      <div class="footer-bottom">
+          <p>&copy; 2024 Tienda Virtual. Todos los derechos reservados.</p>
       </div>
+  </footer>
 
-    </div>
-  </div>
-</div>
-
-<!-- FOOTER -->
-<footer class="footer mt-5">
-  <div class="footer-content">
-    <div class="footer-section">
-      <h3>Tienda Virtual</h3>
-      <p>Tu tienda de confianza para compras en línea</p>
-      <div class="social-links">
-        <a href="#">📘 Facebook</a>
-        <a href="#">📷 Instagram</a>
-        <a href="#">💬 WhatsApp</a>
-      </div>
-    </div>
-
-    <div class="footer-section">
-      <h4>Enlaces Rápidos</h4>
-      <ul>
-        <li><a href="../index.html">Inicio</a></li>
-        <li><a href="#contacto">Contacto</a></li>
-        <li><a href="./login.html">Iniciar Sesión</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-section">
-      <h4>Contacto</h4>
-      <p>📧 info@tiendavirtual.com</p>
-      <p>📞 +51 987 654 321</p>
-      <p>📍 Lima, Perú</p>
-    </div>
-
-    <div class="footer-section">
-      <h4>Horario</h4>
-      <p>L–V: 9:00 AM – 7:00 PM</p>
-      <p>Sáb: 9:00 AM – 2:00 PM</p>
-      <p>Dom: Cerrado</p>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <p>&copy; 2024 Tienda Virtual. Todos los derechos reservados.</p>
-  </div>
-</footer>
-
-
-<script src="../js/productos.js?v=12345"></script>
-
+  <!-- ===================================================== -->
+  <!--                  SCRIPTS DE FUNCIONALIDAD             -->
+  <!-- ===================================================== -->
+  <script src="../js/productos.js?v=12345"></script>
 </body>
 </html>
 
