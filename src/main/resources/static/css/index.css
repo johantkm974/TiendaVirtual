@@ -389,6 +389,7 @@ button { cursor:pointer; font-family:"Poppins",sans-serif; }
 
 /* ===== MODAL PAYPAL NO DISPONIBLE ===== */
 
+/* ===== MODAL PAYPAL NO DISPONIBLE ===== */
 .modal-info {
   position: fixed;
   inset: 0;
@@ -396,18 +397,22 @@ button { cursor:pointer; font-family:"Poppins",sans-serif; }
   display: flex;
   justify-content: center;
   align-items: center;
+
+  /* ESTAS DOS LÍNEAS SON LA CLAVE */
   opacity: 0;
   visibility: hidden;
-  transition: 0.25s ease;
-  z-index: 5000;
+
+  transition: opacity .25s ease, visibility .25s ease;
+  z-index: 9999;
 }
 
 .modal-info.show {
+  /* CUANDO SE ABRE */
   opacity: 1;
   visibility: visible;
 }
 
-.modal-content {
+.modal-info .modal-content {
   background: #fff;
   padding: 25px 32px;
   border-radius: 12px;
@@ -415,18 +420,11 @@ button { cursor:pointer; font-family:"Poppins",sans-serif; }
   max-width: 420px;
   text-align: center;
   animation: popup 0.25s ease;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
 }
 
 @keyframes popup {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .modal-btn {
@@ -442,5 +440,3 @@ button { cursor:pointer; font-family:"Poppins",sans-serif; }
 .modal-btn:hover {
   background: #005f9d;
 }
-
-
