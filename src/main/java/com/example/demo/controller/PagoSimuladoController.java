@@ -12,7 +12,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/pago-simulado")
-
 public class PagoSimuladoController {
 
     private final VentaService ventaService;
@@ -31,23 +30,38 @@ public class PagoSimuladoController {
     @PostMapping("/pagar")
     public ResponseEntity<String> pagarSimulado(@RequestParam Integer ventaId) {
         try {
+
             Optional<Venta> ventaOpt = ventaService.findById(ventaId);
             if (ventaOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("<h2>Venta no encontrada</h2>");
             }
 
+            // 🔥 Venta encontrada
             Venta venta = ventaOpt.get();
+
+            // 🔥 ACTUALIZAR ESTADO DE PAGO
             venta.setEstadoPago("APROBADO");
             venta.setPaymentId("SIMULATED_" + System.currentTimeMillis());
             ventaService.save(venta);
 
-            // Generar PDF
-          
-            // Enviar correo
-       
+            // 🔥 RECARGAR VENTA DESDE BD (IMPORTANTE PARA PDF)
+            venta = ventaService.findById(ventaId).orElseThrow();
 
-            // Retornar página de confirmación bonita
+            // 🔥 GENERAR PDF ACTUALIZADO
+            String pdfUrl = pdfService.generarReciboPDF(venta);
+
+            // 🔥 ENVIAR EMAIL
+            if (venta.getUsuario() != null && venta.getUsuario().getCorreo() != null) {
+                emailService.enviarCorreoConAdjunto(
+                        venta.getUsuario().getCorreo(),
+                        "Pago Simulado - Venta #" + venta.getId(),
+                        "<h2>Pago Simulado Realizado</h2><p>Adjunto tu recibo.</p>",
+                        pdfUrl
+                );
+            }
+
+            // 🔥 RESPUESTA HTML BONITA
             String html = """
             <!DOCTYPE html>
             <html lang="es">
