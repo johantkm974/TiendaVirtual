@@ -5,7 +5,6 @@ import com.example.demo.model.Usuario;
 import com.example.demo.model.MetodoPago;
 import com.example.demo.model.DetalleVenta;
 import com.example.demo.model.Producto;
-
 import com.example.demo.repository.VentaRepository;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.repository.MetodoPagoRepository;
@@ -13,7 +12,6 @@ import com.example.demo.repository.ProductoRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -33,8 +31,8 @@ public class VentaService {
             MetodoPagoRepository metodoPagoRepository,
             ProductoRepository productoRepository,
             PdfGeneratorService pdfGeneratorService,
-            EmailService emailService
-    ) {
+            EmailService emailService) {
+
         this.ventaRepository = ventaRepository;
         this.usuarioRepository = usuarioRepository;
         this.metodoPagoRepository = metodoPagoRepository;
@@ -44,11 +42,10 @@ public class VentaService {
     }
 
     // ============================================================
-    // ✅ CREAR UNA VENTA COMPLETA
+    // ✅ MÉTODO PRINCIPAL: CREAR UNA VENTA COMPLETA
     // ============================================================
     @Transactional
     public Venta crearVenta(Integer usuarioId, Integer metodoPagoId, List<DetalleVenta> detalles) {
-
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -62,23 +59,21 @@ public class VentaService {
         double total = 0;
 
         for (DetalleVenta detalle : detalles) {
-
             Producto producto = productoRepository.findById(detalle.getProducto().getId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
             if (producto.getStock() < detalle.getCantidad()) {
-                throw new RuntimeException("Stock insuficiente: " + producto.getNombre());
+                throw new RuntimeException("Stock insuficiente para el producto: " + producto.getNombre());
             }
 
-            // Reducir stock
             producto.setStock(producto.getStock() - detalle.getCantidad());
             productoRepository.save(producto);
 
             detalle.setPrecioUnitario(producto.getPrecio());
-            detalle.setSubtotal(producto.getPrecio() * detalle.getCantidad());
+            double subtotal = detalle.getPrecioUnitario() * detalle.getCantidad();
+            detalle.setSubtotal(subtotal);
             detalle.setVenta(venta);
-
-            total += detalle.getSubtotal();
+            total += subtotal;
         }
 
         venta.setDetalles(detalles);
@@ -86,52 +81,42 @@ public class VentaService {
 
         Venta ventaGuardada = ventaRepository.save(venta);
 
-        // Generar y enviar recibo (sin romper venta, se ejecuta aparte)
+        // 🔹 Generar recibo PDF y enviarlo por correo
         try {
-            String pdfPath = pdfGeneratorService.generarReciboPDF(ventaGuardada);
-
+            String pdfUrl = pdfGeneratorService.generarReciboPDF(ventaGuardada);
             if (usuario.getCorreo() != null && !usuario.getCorreo().isEmpty()) {
-                emailService.enviarReciboPorCorreo(usuario.getCorreo(), pdfPath);
+                emailService.enviarReciboPorCorreo(usuario.getCorreo(), pdfUrl);
             }
-
+            System.out.println("✅ Recibo generado y enviado: " + pdfUrl);
         } catch (Exception e) {
-            System.err.println("⚠ Error al generar o enviar PDF: " + e.getMessage());
+            System.err.println("⚠️ Error al generar o enviar el recibo: " + e.getMessage());
         }
 
         return ventaGuardada;
     }
 
     // ============================================================
-    // 🔍 Buscar Venta por ID
+    // ✅ MÉTODOS ADICIONALES DE CONSULTA
     // ============================================================
     public Optional<Venta> findById(Integer id) {
         return ventaRepository.findById(id);
     }
 
-    // ============================================================
-    // 🔍 Buscar todas las ventas
-    // ============================================================
     public List<Venta> findAll() {
         return ventaRepository.findAll();
     }
 
-    // ============================================================
-    // 🔍 Buscar por Payment ID (PayPal)
-    // ============================================================
     public Optional<Venta> findByPaymentId(String paymentId) {
         return ventaRepository.findByPaymentId(paymentId);
     }
 
     // ============================================================
-    // 🔄 Guardar cambios en venta
+    // ✅ MÉTODOS REQUERIDOS POR LOS CONTROLADORES (no eliminar)
     // ============================================================
     public Venta save(Venta venta) {
         return ventaRepository.save(venta);
     }
 
-    // ============================================================
-    // ❌ Eliminar venta
-    // ============================================================
     public boolean eliminarPorId(Integer id) {
         if (ventaRepository.existsById(id)) {
             ventaRepository.deleteById(id);
