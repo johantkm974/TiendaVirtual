@@ -15,7 +15,7 @@ function mostrarSeccion(id) {
 }
 
 /* =======================================
-   CARGAR USUARIOS
+   CARGAR USUARIOS (LÓGICA ORIGINAL DEL ADMIN)
 ======================================= */
 async function cargarUsuarios() {
   const tabla = document.querySelector("#tablaUsuarios tbody");
@@ -26,9 +26,9 @@ async function cargarUsuarios() {
     const usuarios = await res.json();
 
     usuarios.forEach(u => {
-      const esAdmin =
-        u.rol?.nombre?.trim().toLowerCase() === "administrador" ||
-        u.rol?.nombre?.trim().toLowerCase() === "admin";
+
+      // 👉 MISMA LÓGICA QUE USABAS EN EL BOTÓN ELIMINAR (FUNCIONA PERFECTO)
+      const esAdmin = u.rol && (u.rol.id === 1 || u.rol.nombre?.toUpperCase() === "ADMINISTRADOR");
 
       const fila = document.createElement("tr");
 
@@ -37,20 +37,21 @@ async function cargarUsuarios() {
         <td>${u.nombre}</td>
         <td>${u.correo}</td>
         <td>${esAdmin ? "Administrador" : "Cliente"}</td>
+
         <td>
+          ${
+            esAdmin
+              ? "" 
+              : `
+                <button class="btn btn-editar" onclick="abrirModal(${u.id}, '${u.nombre}', '${u.correo}')">
+                  ✏ Editar
+                </button>
 
-          <!-- BOTÓN EDITAR -->
-          <button class="btn btn-editar"
-            onclick="abrirModal(${u.id}, '${u.nombre}', '${u.correo}', ${esAdmin})"
-            ${esAdmin ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
-            ✏ Editar
-          </button>
-
-          <!-- BOTÓN ELIMINAR -->
-          ${esAdmin ? "" : `
-            <button class="btn btn-eliminar" onclick="eliminarUsuario(${u.id})">
-              🗑 Eliminar
-            </button>`}
+                <button class="btn btn-eliminar" onclick="eliminarUsuario(${u.id})">
+                  🗑 Eliminar
+                </button>
+              `
+          }
         </td>
       `;
 
@@ -63,23 +64,18 @@ async function cargarUsuarios() {
 }
 
 /* =======================================
-   ABRIR / CERRAR MODAL
+   MODAL → ABRIR / CERRAR
 ======================================= */
-function abrirModal(id, nombre, correo, esAdmin) {
-  if (esAdmin) {
-    Swal.fire("Prohibido", "No puedes editar al Administrador", "error");
-    return;
-  }
-
+function abrirModal(id, nombre, correo) {
   document.getElementById("editId").value = id;
   document.getElementById("editNombre").value = nombre;
   document.getElementById("editCorreo").value = correo;
 
-  // Asegura que el input contraseña NO esté transparente
-  const passInput = document.getElementById("editContrasena");
-  passInput.value = "";
-  passInput.style.background = "white";
-  passInput.style.color = "black";
+  // Contraseña limpia y visible correctamente
+  const pass = document.getElementById("editContrasena");
+  pass.value = "";
+  pass.style.background = "white";
+  pass.style.color = "black";
 
   document.getElementById("modalEditar").style.display = "flex";
 }
@@ -89,7 +85,7 @@ function cerrarModal() {
 }
 
 /* =======================================
-   GUARDAR CAMBIOS (PUT)
+   GUARDAR CAMBIOS DE USUARIO (PUT)
 ======================================= */
 async function guardarCambiosUsuario() {
   const id = document.getElementById("editId").value;
@@ -97,10 +93,10 @@ async function guardarCambiosUsuario() {
   const correo = document.getElementById("editCorreo").value;
   const contrasena = document.getElementById("editContrasena").value;
 
-  // enviar solo lo necesario
+  // Solo se envían datos modificados
   const data = { nombre, correo };
 
-  // enviar solo si se modificó
+  // Contraseña solo si fue modificada
   if (contrasena.trim() !== "") {
     data.contrasena = contrasena;
   }
@@ -123,7 +119,7 @@ async function guardarCambiosUsuario() {
     cargarUsuarios();
 
   } catch (error) {
-    Swal.fire("Error", "Hubo un problema al actualizar", "error");
+    Swal.fire("Error", "No se pudo actualizar el usuario", "error");
   }
 }
 
@@ -165,7 +161,6 @@ function mostrarVentas(ventas) {
 
   ventas.forEach(v => {
     const fila = document.createElement("tr");
-
     fila.innerHTML = `
       <td>${v.id}</td>
       <td>${v.usuario ? v.usuario.nombre : "Sin usuario"}</td>
@@ -173,21 +168,26 @@ function mostrarVentas(ventas) {
       <td>${v.total ? v.total.toFixed(2) : "0.00"}</td>
       <td>${v.estadoPago || "Pendiente"}</td>
       <td>
-        ${v.estadoPago === "APROBADO"
-          ? `<button class="btn btn-ver" onclick="verRecibo(${v.id})">📄 PDF</button>`
-          : `<button class="btn btn-confirmar" onclick="confirmarPago(${v.id})">Confirmar</button>`
+        ${
+          v.estadoPago === "APROBADO"
+            ? `<button class="btn btn-ver" onclick="verRecibo(${v.id})">📄 PDF</button>`
+            : `<button class="btn btn-confirmar" onclick="confirmarPago(${v.id})">Confirmar</button>`
         }
         <button class="btn btn-eliminar" onclick="eliminarVenta(${v.id})">🗑</button>
       </td>
     `;
-
     tabla.appendChild(fila);
   });
 }
 
+/* =======================================
+   EVENTO AL INICIAR
+======================================= */
 document.addEventListener("DOMContentLoaded", () => {
   mostrarSeccion("usuarios");
 });
+
+
 
 
 
