@@ -34,7 +34,7 @@ public class VentaController {
     }
 
     // ================================
-    //   CREAR VENTA + DETALLES
+    //     CREAR VENTA + DETALLES
     // ================================
     @PostMapping
     public ResponseEntity<?> crearVenta(@RequestBody Map<String, Object> request) {
@@ -67,14 +67,13 @@ public class VentaController {
             return ResponseEntity.status(HttpStatus.CREATED).body(venta);
 
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al crear venta: " + e.getMessage());
         }
     }
 
     // ================================
-    //   PROCESAR VENTA (PDF + CORREO)
+    //     PROCESAR PAGO + PDF + EMAIL
     // ================================
     @PostMapping("/procesar")
     public ResponseEntity<Map<String, Object>> procesarVenta(@RequestBody Venta venta) {
@@ -89,7 +88,7 @@ public class VentaController {
                 emailService.enviarCorreoConAdjunto(
                         ventaGuardada.getUsuario().getCorreo(),
                         "Recibo de tu compra #" + ventaGuardada.getId(),
-                        "<h2>Gracias por tu compra</h2><p>Adjunto encontrarás tu recibo en PDF.</p>",
+                        "<h2>Gracias por tu compra</h2><p>Adjunto tu recibo en PDF.</p>",
                         pdfPath
                 );
             }
@@ -107,7 +106,7 @@ public class VentaController {
     }
 
     // ================================
-    //   CONFIRMAR PAGO + PDF + EMAIL
+    //     CONFIRMAR PAGO MANUAL
     // ================================
     @PostMapping("/confirmar-pago")
     public ResponseEntity<Map<String, Object>> confirmarPago(@RequestBody Map<String, Object> data) {
@@ -117,27 +116,27 @@ public class VentaController {
 
             Venta venta = ventaService.findById(ventaId).orElse(null);
             if (venta == null) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Venta no encontrada"));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Venta no encontrada"));
             }
 
-            // 🔥 Actualizar la venta
+            // ACTUALIZAR DATOS
             venta.setEstadoPago("APROBADO");
             venta.setPaymentId(paymentId);
-
             ventaService.save(venta);
 
-            // 🔥 RECARGAR DESDE BD (IMPORTANTE)
+            // RECARGAR DESDE BD PARA ASEGURAR DATOS CORRECTOS
             venta = ventaService.findById(ventaId).orElseThrow();
 
-            // 🔥 Generar PDF con datos ACTUALIZADOS
+            // GENERAR PDF FINAL
             String pdfPath = pdfService.generarReciboPDF(venta);
 
-            // Enviar correo
+            // ENVIAR CORREO
             if (venta.getUsuario() != null && venta.getUsuario().getCorreo() != null) {
                 emailService.enviarCorreoConAdjunto(
                         venta.getUsuario().getCorreo(),
-                        "Comprobante de pago - Orden #" + venta.getId(),
-                        "<h2>¡Gracias por tu compra!</h2><p>Adjuntamos tu comprobante.</p>",
+                        "Comprobante de Pago - Venta #" + venta.getId(),
+                        "<h2>Pago Confirmado</h2><p>Adjuntamos tu comprobante.</p>",
                         pdfPath
                 );
             }
@@ -155,7 +154,7 @@ public class VentaController {
     }
 
     // ================================
-    //   DESCARGAR PDF
+    //     DESCARGAR PDF
     // ================================
     @GetMapping("/{id}/recibo")
     public ResponseEntity<?> descargarRecibo(@PathVariable Integer id) {
@@ -176,7 +175,6 @@ public class VentaController {
             }
 
             FileSystemResource resource = new FileSystemResource(archivo);
-
             HttpHeaders headers = new HttpHeaders();
             headers.setContentDisposition(
                     ContentDisposition.inline().filename("recibo_venta_" + id + ".pdf").build()
@@ -192,7 +190,7 @@ public class VentaController {
     }
 
     // ================================
-    //   LISTAR TODAS
+    //     LISTAR TODAS
     // ================================
     @GetMapping
     public ResponseEntity<List<Venta>> obtenerTodas() {
@@ -200,7 +198,7 @@ public class VentaController {
     }
 
     // ================================
-    //   OBTENER POR ID
+    //     OBTENER POR ID
     // ================================
     @GetMapping("/{id}")
     public ResponseEntity<Venta> obtenerPorId(@PathVariable Integer id) {
@@ -210,7 +208,7 @@ public class VentaController {
     }
 
     // ================================
-    //   ELIMINAR
+    //     ELIMINAR
     // ================================
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarVenta(@PathVariable Integer id) {
