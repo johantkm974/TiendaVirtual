@@ -1,8 +1,16 @@
-/* ============================================================
-    NAV + HEADER (importado desde ventas.css para productos.html)
-   ============================================================ */
+/* ==================================================
+   CONTENEDOR GLOBAL
+==================================================*/
+.contenedor-admin {
+  width: 100%;
+  max-width: 1300px;
+  margin: 120px auto 40px auto;
+  padding: 10px;
+}
 
-/* ===== HEADER ===== */
+/* ==================================================
+   HEADER / NAV
+==================================================*/
 header {
   background: #fff;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
@@ -11,226 +19,140 @@ header {
   align-items: center;
   justify-content: space-between;
   position: fixed;
-  top: 0;
+  top: 0; left: 0;
   width: 100%;
   z-index: 2000;
-  gap: 20px;
 }
 
 .logo {
   display: flex;
-  margin-left: 100px;
   gap: 12px;
+  align-items: center;
 }
 .logo img { width: 46px; height: 46px; object-fit: cover; }
-.logo h1 { font-size: 20px; color:#111; margin:0; font-weight:700; }
+.logo h1 { font-size: 20px; font-weight: 700; margin: 0; }
 
-/* ===== NAV ===== */
 nav ul {
   display: flex;
-  list-style: none;
   gap: 22px;
-  align-items: center;
-  margin: 0;
-  padding: 0;
-  margin-left: 100px;
+  list-style: none;
 }
 nav a {
-  color:#333;
-  text-decoration:none;
-  font-weight:500;
-  transition: color .18s ease;
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  transition: .2s;
 }
 nav a:hover { color: #2ecc71; }
 
-/* ===== HEADER ACTIONS ===== */
-.header-actions { display:flex; gap:12px; align-items:center; }
+.header-actions { display: flex; gap: 10px; }
 
-.btn-login {
-  background:linear-gradient(135deg,#2ecc71,#27ae60);
-  color:#fff; border:none; padding:9px 16px; border-radius:24px;
-  cursor:pointer; font-weight:600;
-}
-.btn-login:hover { transform:translateY(-2px); }
-
-/* User info */
-.user-info {
-  display:none;
-  gap:10px;
-  align-items:center;
-  background:linear-gradient(135deg,#0b6623,#145a32);
-  color:white;
-  padding:6px 10px;
-  border-radius:8px;
-}
-#logout-btn {
-  background:#c0392b;
-  color:white;
-  border:none;
-  padding:6px 8px;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-/* =====================================
-            RESPONSIVE NAV
-   ===================================== */
-@media (max-width: 768px) {
-  header { padding: 12px 16px; }
-  nav ul { gap: 12px; margin-left: 0; }
-}
-
-
-
-
-
-/* ======================= */
-/*     ESTILO GENERAL      */
-/* ======================= */
-
-body {
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
-  margin: 0;
-  padding-top: 90px; /* IMPORTANTE por el header fijo */
-}
-
-h1 {
+/* ==================================================
+   TÍTULO
+==================================================*/
+.titulo {
+  font-size: 32px;
   text-align: center;
+  margin-bottom: 20px;
   color: #2c3e50;
-  margin: 20px 0;
 }
 
-/* ======================= */
-/*     BARRA DE ACCIONES   */
-/* ======================= */
-
+/* ==================================================
+   FILTROS Y BOTONES
+==================================================*/
 .acciones {
   display: flex;
   justify-content: center;
-  align-items: center;
   gap: 12px;
-  margin: 20px auto;
-  flex-wrap: wrap;
-  padding: 0 15px;
+  margin-bottom: 25px;
 }
 
-select,
-button {
-  padding: 10px 14px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 15px;
+select, button {
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  font-size: 16px;
 }
 
 button {
-  background-color: #27ae60;
+  background: #27ae60;
   color: white;
   border: none;
   cursor: pointer;
-  transition: 0.2s;
+  font-weight: 600;
 }
+button:hover { background: #1e874b; }
 
-button:hover {
-  background-color: #1e874b;
-}
-
-/* ======================= */
-/*     TABLA PRODUCTOS     */
-/* ======================= */
-
-.table-wrapper {
+/* ==================================================
+   TABLA RESPONSIVE
+==================================================*/
+.table-container {
   width: 100%;
-  max-width: 1100px;
-  margin: auto;
-  overflow-x: auto; /* 🔥 Se arregla el responsive */
+  overflow-x: auto;
 }
 
-#tablaProductos {
+table {
   width: 100%;
   border-collapse: collapse;
   background: white;
   border-radius: 10px;
   overflow: hidden;
+  font-size: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  min-width: 900px; /* Para evitar que se rompa */
 }
 
 th {
-  background-color: #34495e;
+  background: #34495e;
   color: white;
-  padding: 12px;
+  padding: 14px;
+  text-align: center;
 }
 
 td {
-  padding: 12px;
+  padding: 14px;
   text-align: center;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #eee;
 }
 
 td img {
-  border-radius: 8px;
-  width: 50px;
-  height: 50px;
+  width: 70px;
+  height: 70px;
   object-fit: cover;
+  border-radius: 8px;
 }
 
-/* ======================= */
-/*          BOTONES        */
-/* ======================= */
-
-.btn-editar {
-  background-color: #f39c12;
-  color: white;
-  padding: 7px 11px;
+/* BOTONES ACCIÓN */
+td .btn-editar {
+  background: #f39c12;
+  padding: 8px 14px;
   border-radius: 6px;
-  cursor: pointer;
-  border: none;
-  font-size: 13px;
-  transition: .2s;
-}
-.btn-editar:hover { background-color: #d68910; }
-
-.btn-eliminar {
-  background-color: #e74c3c;
   color: white;
-  padding: 7px 11px;
-  border-radius: 6px;
-  cursor: pointer;
-  border: none;
-  font-size: 13px;
 }
-.btn-eliminar:hover { background-color: #c0392b; }
+td .btn-eliminar {
+  background: #e74c3c;
+  padding: 8px 14px;
+  border-radius: 6px;
+  color: white;
+}
 
-/* ======================= */
-/*          MODAL          */
-/* ======================= */
-
+/* ==================================================
+   MODAL
+==================================================*/
 .modal {
   display: none;
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  background: rgba(0,0,0,0.6);
   justify-content: center;
   align-items: center;
-  z-index: 2000;
 }
 
 .modal-content {
-  background: white;
+  background: #fff;
+  padding: 22px;
+  width: 420px;
   border-radius: 10px;
-  padding: 20px;
-  width: 400px;
-  max-width: 90%;
   position: relative;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-  animation: abrirModal .3s ease;
-}
-
-@keyframes abrirModal {
-  from { transform: scale(0.85); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
 }
 
 .close {
@@ -244,39 +166,48 @@ td img {
 .modal-content input,
 .modal-content select {
   width: 100%;
-  padding: 9px;
+  padding: 10px;
   margin: 6px 0;
-  border: 1px solid #ccc;
   border-radius: 6px;
+  border: 1px solid #ccc;
 }
 
 .modal-content img {
   display: block;
   margin: 10px auto;
-  width: 110px;
-  height: 110px;
-  border-radius: 10px;
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
   object-fit: cover;
 }
 
-/* ======================= */
-/*         FOOTER          */
-/* ======================= */
+.modal-content button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background: #27ae60;
+  border: none;
+  color: white;
+  border-radius: 6px;
+}
 
+/* ==================================================
+   FOOTER
+==================================================*/
 .footer {
-  background: linear-gradient(135deg, #2c3e50, #34495e);
+  background: #2c3e50;
   color: #ecf0f1;
   padding: 40px 0 20px;
-  margin-top: 60px;
+  margin-top: 40px;
 }
 
 .footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   max-width: 1200px;
   margin: auto;
+  gap: 30px;
   padding: 0 20px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 25px;
 }
 
 .footer-section h3,
@@ -287,31 +218,24 @@ td img {
 .footer-bottom {
   text-align: center;
   padding-top: 20px;
-  border-top: 1px solid #34495e;
+  color: #bdc3c7;
 }
 
-/* ======================= */
-/*    RESPONSIVE GENERAL   */
-/* ======================= */
-
+/* ==================================================
+   RESPONSIVE
+==================================================*/
 @media (max-width: 768px) {
-
-  .acciones {
-    flex-direction: column;
+  .contenedor-admin {
+    padding: 5px;
+    margin-top: 150px;
   }
 
-  #tablaProductos {
-    min-width: unset;
+  table {
+    font-size: 14px;
   }
 
-  .logo {
-    margin-left: 10px !important;
-  }
-
-  nav ul {
-    gap: 14px;
-    margin-left: 0 !important;
+  td img {
+    width: 55px;
+    height: 55px;
   }
 }
-
-
