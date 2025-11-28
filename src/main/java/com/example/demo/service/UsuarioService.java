@@ -71,7 +71,13 @@ public class UsuarioService {
     return null;
 }
     // Eliminar usuario
-    public void eliminarUsuario(int id) {
+  public void eliminarUsuario(int id) {
+    try {
         usuarioRepository.deleteById(id);
+    } catch (DataIntegrityViolationException e) {
+        throw new RuntimeException("Este usuario no puede ser eliminado porque tiene ventas registradas.");
     }
 }
+
+}
+
