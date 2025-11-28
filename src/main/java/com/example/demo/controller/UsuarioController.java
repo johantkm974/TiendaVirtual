@@ -106,11 +106,17 @@ public ResponseEntity<?> actualizar(@PathVariable int id, @RequestBody Usuario u
 
 
     // ✅ Eliminar usuario
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable int id) {
+   @DeleteMapping("/{id}")
+public ResponseEntity<?> eliminar(@PathVariable int id) {
+    try {
         usuarioService.eliminarUsuario(id);
         return ResponseEntity.ok("Usuario eliminado correctamente");
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
     }
+}
+
 
 }
+
 
