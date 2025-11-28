@@ -72,23 +72,38 @@ public class UsuarioController {
     }
 
     // ✅ Actualizar usuario
-    @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable int id, @RequestBody Usuario usuarioActualizado) {
-        Optional<Usuario> usuarioExistente = usuarioService.buscarPorId(id);
+   // ✅ Actualizar usuario (SIN obligar a enviar contraseña)
+@PutMapping("/{id}")
+public ResponseEntity<?> actualizar(@PathVariable int id, @RequestBody Usuario usuarioActualizado) {
+    Optional<Usuario> usuarioExistente = usuarioService.buscarPorId(id);
 
-        if (usuarioExistente.isPresent()) {
-            Usuario usuario = usuarioExistente.get();
-            usuario.setNombre(usuarioActualizado.getNombre());
-            usuario.setCorreo(usuarioActualizado.getCorreo());
+    if (usuarioExistente.isPresent()) {
+        Usuario usuario = usuarioExistente.get();
+
+        // 🔹 Actualizar nombre y correo siempre
+        usuario.setNombre(usuarioActualizado.getNombre());
+        usuario.setCorreo(usuarioActualizado.getCorreo());
+
+        // 🔹 Solo actualizar contraseña si viene NO vacía
+        if (usuarioActualizado.getContrasena() != null &&
+            !usuarioActualizado.getContrasena().trim().isEmpty()) 
+        {
             usuario.setContrasena(usuarioActualizado.getContrasena());
-            usuario.setRol(usuarioActualizado.getRol());
-
-            Usuario actualizado = usuarioService.registrarUsuario(usuario);
-            return ResponseEntity.ok(actualizado);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         }
+
+        // 🔹 Solo actualizar rol si viene uno en el JSON
+        if (usuarioActualizado.getRol() != null) {
+            usuario.setRol(usuarioActualizado.getRol());
+        }
+
+        Usuario actualizado = usuarioService.registrarUsuario(usuario);
+        return ResponseEntity.ok(actualizado);
+    } else {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                             .body("Usuario no encontrado");
     }
+}
+
 
     // ✅ Eliminar usuario
     @DeleteMapping("/{id}")
@@ -98,3 +113,4 @@ public class UsuarioController {
     }
 
 }
+
