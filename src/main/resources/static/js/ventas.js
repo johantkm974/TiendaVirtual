@@ -127,17 +127,51 @@ async function guardarCambiosUsuario() {
    ELIMINAR USUARIO
 ======================================= */
 async function eliminarUsuario(id) {
-  if (!confirm("¿Seguro que deseas eliminar este usuario?")) return;
+  const confirmar = await Swal.fire({
+    title: "¿Eliminar usuario?",
+    text: "Esta acción no se puede deshacer",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar"
+  });
+
+  if (!confirmar.isConfirmed) return;
 
   try {
-    const res = await fetch(`${API_BASE}/usuarios/${id}`, { method: "DELETE" });
-    const msg = await res.text();
-    alert(msg);
+    const res = await fetch(`${API_BASE}/usuarios/${id}`, {
+      method: "DELETE"
+    });
+
+    if (!res.ok) {
+      const error = await res.text();
+
+      Swal.fire({
+        icon: "error",
+        title: "No se puede eliminar",
+        text: error
+      });
+      return;
+    }
+
+    Swal.fire({
+      icon: "success",
+      title: "Usuario eliminado",
+      timer: 1500,
+      showConfirmButton: false
+    });
+
     cargarUsuarios();
+
   } catch (error) {
-    alert("Error al eliminar usuario.");
+    Swal.fire({
+      icon: "error",
+      title: "Error inesperado",
+      text: "No se pudo eliminar el usuario."
+    });
   }
 }
+
 
 /* =======================================
    VENTAS
@@ -186,6 +220,7 @@ function mostrarVentas(ventas) {
 document.addEventListener("DOMContentLoaded", () => {
   mostrarSeccion("usuarios");
 });
+
 
 
 
