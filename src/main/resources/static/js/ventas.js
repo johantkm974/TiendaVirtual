@@ -25,7 +25,10 @@ async function cargarUsuarios() {
     const usuarios = await res.json();
 
     usuarios.forEach(u => {
-      const esAdmin = u.rol?.nombre?.toUpperCase() === "ADMINISTRADOR";
+      const esAdmin = 
+    u.rol?.nombre?.trim().toLowerCase() === "administrador" ||
+    u.rol?.nombre?.trim().toLowerCase() === "admin";
+
 
       const fila = document.createElement("tr");
 
@@ -169,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   
+
 
 
 
