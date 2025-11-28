@@ -187,7 +187,7 @@ function mostrarVentas(ventas) {
             ? `<button class="btn btn-ver" onclick="verRecibo(${v.id})">📄 PDF</button>`
             : `<button class="btn btn-confirmar" onclick="confirmarPago(${v.id})">Confirmar</button>`
         }
-        <button class="btn btn-eliminar" onclick="eliminarVenta(${v.id})">🗑</button>
+        <button class="btn btn-eliminar" onclick="eliminarVenta(${v.id})">🗑 Eliminar</button>
       </td>
     `;
 
@@ -254,6 +254,7 @@ function verRecibo(id) {
 document.addEventListener("DOMContentLoaded", () => {
   mostrarSeccion("usuarios");
 });
+
 
 
 
