@@ -10,9 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    /* ===========================
-        MODAL EDITAR USUARIO
-    ============================*/
+    /* MODAL */
     .modal {
       position: fixed;
       top: 0;
@@ -33,17 +31,14 @@
       border-radius: 8px;
     }
 
-    .modal-content h3 {
-      margin-top: 0;
-      text-align: center;
-    }
-
     .modal-content input {
       width: 100%;
       padding: 8px;
       margin-top: 8px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 6px;
+      background: white;
+      color: black;
     }
 
     .modal-buttons {
@@ -86,7 +81,7 @@
     <div class="header-actions" id="headerActions"></div>
   </header>
 
-  <!-- ===== PANEL ===== -->
+  <!-- ===== PANEL ADMIN ===== -->
   <main style="margin-top: 140px;">
     <nav class="panel-nav">
       <button onclick="mostrarSeccion('usuarios')">👤 Usuarios</button>
@@ -113,6 +108,7 @@
     <!-- VENTAS -->
     <section id="ventas" class="seccion">
       <h2>Gestión de Ventas</h2>
+
       <div class="buscador">
         <input type="text" id="busquedaUsuario" placeholder="Buscar por ID o nombre de usuario">
         <button onclick="filtrarVentas()">🔍 Buscar</button>
@@ -125,7 +121,7 @@
             <th>ID</th>
             <th>Usuario</th>
             <th>Método Pago</th>
-            <th>Total (S/)</th>
+            <th>Total</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -137,11 +133,10 @@
     <p id="mensaje"></p>
   </main>
 
-  <!-- ==========================
-        MODAL EDITAR USUARIO
-  =========================== -->
+  <!-- MODAL EDITAR USUARIO -->
   <div id="modalEditar" class="modal">
     <div class="modal-content">
+
       <h3>Editar Usuario</h3>
 
       <input type="hidden" id="editId">
@@ -159,6 +154,7 @@
         <button class="btn-guardar" onclick="guardarCambiosUsuario()">Guardar</button>
         <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
       </div>
+
     </div>
   </div>
 
@@ -172,7 +168,7 @@
   <script src="../js/ventas.js"></script>
 
   <script>
-    const usuario = JSON.parse(localStorage.getItem('usuario'));
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
     if (!usuario) window.location.href = "./login.html";
 
     const headerActions = document.getElementById("headerActions");
@@ -183,4 +179,5 @@
 
 </body>
 </html>
+
 
