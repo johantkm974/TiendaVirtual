@@ -234,6 +234,11 @@ async function listarProductos() {
     contenedorPrincipal.innerHTML = `<p style="text-align:center;padding:30px;color:#666">No se pudieron cargar los productos. Intenta más tarde.</p>`;
   }
 }
+function cerrarModalInfo() {
+  document.getElementById("modalInfo").classList.remove("show");
+}
+window.cerrarModalInfo = cerrarModalInfo;
+
 
 // 🔥 NUEVA FUNCIÓN: Procesar estructura del producto
 function procesarProducto(producto) {
@@ -696,6 +701,7 @@ window.cambiarCantidad = cambiarCantidad;
 window.vaciarCarrito = vaciarCarrito;
 window.procesarPagoPayPal = procesarPagoPayPal;
 window.procesarPagoSimulado = procesarPagoSimulado;
+
 
 
 
