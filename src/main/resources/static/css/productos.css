@@ -1,9 +1,13 @@
+/* ======================= */
+/*     ESTILO GENERAL      */
+/* ======================= */
+
 body {
   font-family: Arial, sans-serif;
   background: #f4f6f8;
   margin: 0;
+  padding-top: 90px; /* IMPORTANTE por el header fijo */
 }
-
 
 h1 {
   text-align: center;
@@ -11,16 +15,23 @@ h1 {
   margin: 20px 0;
 }
 
+/* ======================= */
+/*     BARRA DE ACCIONES   */
+/* ======================= */
+
 .acciones {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin: 20px auto;
+  flex-wrap: wrap;
+  padding: 0 15px;
 }
 
-select, button {
-  padding: 8px 12px;
+select,
+button {
+  padding: 10px 14px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 15px;
@@ -38,33 +49,77 @@ button:hover {
   background-color: #1e874b;
 }
 
-table {
-  width: 90%;
+/* ======================= */
+/*     TABLA PRODUCTOS     */
+/* ======================= */
+
+.table-wrapper {
+  width: 100%;
+  max-width: 1100px;
   margin: auto;
+  overflow-x: auto; /* 🔥 Se arregla el responsive */
+}
+
+#tablaProductos {
+  width: 100%;
   border-collapse: collapse;
   background: white;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  min-width: 900px; /* Para evitar que se rompa */
 }
 
 th {
   background-color: #34495e;
   color: white;
-  padding: 10px;
+  padding: 12px;
 }
 
 td {
-  padding: 10px;
+  padding: 12px;
   text-align: center;
   border-bottom: 1px solid #ddd;
 }
 
 td img {
   border-radius: 8px;
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
 }
 
-/* === Modal === */
+/* ======================= */
+/*          BOTONES        */
+/* ======================= */
+
+.btn-editar {
+  background-color: #f39c12;
+  color: white;
+  padding: 7px 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-size: 13px;
+  transition: .2s;
+}
+.btn-editar:hover { background-color: #d68910; }
+
+.btn-eliminar {
+  background-color: #e74c3c;
+  color: white;
+  padding: 7px 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-size: 13px;
+}
+.btn-eliminar:hover { background-color: #c0392b; }
+
+/* ======================= */
+/*          MODAL          */
+/* ======================= */
+
 .modal {
   display: none;
   position: fixed;
@@ -73,7 +128,7 @@ td img {
   background: rgba(0, 0, 0, 0.6);
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 2000;
 }
 
 .modal-content {
@@ -81,13 +136,14 @@ td img {
   border-radius: 10px;
   padding: 20px;
   width: 400px;
+  max-width: 90%;
   position: relative;
   box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-  animation: abrirModal 0.3s ease;
+  animation: abrirModal .3s ease;
 }
 
 @keyframes abrirModal {
-  from { transform: scale(0.8); opacity: 0; }
+  from { transform: scale(0.85); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 
@@ -95,96 +151,32 @@ td img {
   position: absolute;
   right: 15px;
   top: 10px;
-  font-size: 20px;
-  color: #888;
+  font-size: 22px;
   cursor: pointer;
 }
 
-.close:hover { color: #000; }
-
-.modal-content input, .modal-content select {
+.modal-content input,
+.modal-content select {
   width: 100%;
-  padding: 8px;
-  margin: 5px 0;
+  padding: 9px;
+  margin: 6px 0;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 6px;
 }
 
 .modal-content img {
   display: block;
   margin: 10px auto;
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   border-radius: 10px;
   object-fit: cover;
 }
 
-.modal-content button {
-  width: 100%;
-  margin-top: 10px;
-}
+/* ======================= */
+/*         FOOTER          */
+/* ======================= */
 
-
-
-.btn-admin {
-  background-color: #ff5722;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-}
-.btn-admin:hover { background-color: #e64a19; }
-
-.btn-logout {
-  background-color: #555;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-right: 100px;
-}
-.btn-logout:hover { background-color: #333; }
-
-/* Overlay de carga */
-.loader-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #f4f6f8;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  opacity: 1;
-  transition: opacity 0.5s ease;
-}
-
-/* Animación del spinner */
-.loader {
-  border: 6px solid #ccc;
-  border-top: 6px solid #27ae60;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: girar 1s linear infinite;
-}
-
-@keyframes girar {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Ocultar overlay suavemente */
-.loader-overlay.oculto {
-  opacity: 0;
-  pointer-events: none;
-}
-/* ================= FOOTER ================= */
 .footer {
   background: linear-gradient(135deg, #2c3e50, #34495e);
   color: #ecf0f1;
@@ -194,114 +186,45 @@ td img {
 
 .footer-content {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: auto;
   padding: 0 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 25px;
 }
 
-.footer-section h3 {
-  color: #2ecc71;
-  margin-bottom: 15px;
-  font-size: 1.4rem;
-}
-
+.footer-section h3,
 .footer-section h4 {
-  color: #2ecc71;
-  margin-bottom: 15px;
-  font-size: 1.1rem;
-}
-
-.footer-section p {
-  margin-bottom: 10px;
-  line-height: 1.6;
-}
-
-.footer-section ul {
-  list-style: none;
-}
-
-.footer-section ul li {
-  margin-bottom: 8px;
-}
-
-.footer-section ul li a {
-  color: #bdc3c7;
-  transition: color 0.3s ease;
-}
-
-.footer-section ul li a:hover {
-  color: #2ecc71;
-}
-
-.social-links {
-  display: flex;
-  gap: 15px;
-  margin-top: 15px;
-}
-
-.social-links a {
-  color: #bdc3c7;
-  transition: color 0.3s ease;
-  font-size: 0.9rem;
-}
-
-.social-links a:hover {
   color: #2ecc71;
 }
 
 .footer-bottom {
-  max-width: 1200px;
-  margin: 30px auto 0;
-  padding: 20px;
-  border-top: 1px solid #34495e;
   text-align: center;
-  color: #95a5a6;
+  padding-top: 20px;
+  border-top: 1px solid #34495e;
 }
 
-.footer-bottom p {
-  margin: 0;
-  font-size: 0.9rem;
-}
+/* ======================= */
+/*    RESPONSIVE GENERAL   */
+/* ======================= */
 
-/* 🔥 RESPONSIVE PARA TARJETAS Y FOOTER */
 @media (max-width: 768px) {
-  .banner { 
-      height:220px; 
+
+  .acciones {
+    flex-direction: column;
   }
-  
-  .banner-texto { 
-      font-size:1.3rem; 
-      left:14px; 
-      bottom:18px; 
+
+  #tablaProductos {
+    min-width: unset;
   }
-  
-  .productos-grid {
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 15px;
+
+  .logo {
+    margin-left: 10px !important;
   }
-  
-  .producto-card {
-      min-height: 400px;
-  }
-  
-  .producto-imagen-container {
-      height: 180px;
-  }
-  
-  .contacto-grid { 
-      grid-template-columns:1fr; 
-      gap:14px; 
-  }
-  
-  .footer-content {
-      grid-template-columns: 1fr;
-      gap: 20px;
-      text-align: center;
-  }
-  
-  .social-links {
-      justify-content: center;
+
+  nav ul {
+    gap: 14px;
+    margin-left: 0 !important;
   }
 }
+
