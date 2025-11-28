@@ -8,72 +8,6 @@
   <link rel="stylesheet" href="../css/ventas.css">
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <style>
-    /* ===== MODAL EDITAR USUARIO ===== */
-    .modal {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    .modal-content {
-      background: white;
-      padding: 25px;
-      width: 380px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    .modal-content h3 {
-      margin-top: 0;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-
-    .modal-content label {
-      display: block;
-      margin-top: 10px;
-    }
-
-    .modal-content input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    .modal-buttons {
-      margin-top: 15px;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .modal-buttons button {
-      width: 48%;
-      padding: 8px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      color: white;
-    }
-
-    .btn-guardar { background: #28a745; }
-    .btn-cancelar { background: #dc3545; }
-  </style>
-
 </head>
 <body>
 
@@ -92,6 +26,7 @@
       </ul>
     </nav>
 
+    <!-- Contenedor dinámico para usuario/admin -->
     <div class="header-actions" id="headerActions"></div>
   </header>
 
@@ -102,10 +37,8 @@
       <button onclick="mostrarSeccion('ventas')">💰 Ventas</button>
     </nav>
 
-    <!-- ========== SECCIÓN USUARIOS ========== -->
     <section id="usuarios" class="seccion visible">
       <h2>Gestión de Usuarios</h2>
-
       <table id="tablaUsuarios">
         <thead>
           <tr>
@@ -120,7 +53,6 @@
       </table>
     </section>
 
-    <!-- ========== SECCIÓN VENTAS ========== -->
     <section id="ventas" class="seccion">
       <h2>Gestión de Ventas</h2>
 
@@ -148,37 +80,18 @@
     <p id="mensaje"></p>
   </main>
 
-  <!-- ===== MODAL PARA EDITAR USUARIO ===== -->
-  <div id="modalEditar" class="modal">
-    <div class="modal-content">
-      <h3>Editar Usuario</h3>
-
-      <input type="hidden" id="editId">
-
-      <label>Nombre:</label>
-      <input type="text" id="editNombre">
-
-      <label>Correo:</label>
-      <input type="email" id="editCorreo">
-
-      <label>Contraseña:</label>
-      <input type="password" id="editContrasena">
-
-      <div class="modal-buttons">
-        <button class="btn-guardar" onclick="guardarCambiosUsuario()">Guardar</button>
-        <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
         <h3>Tienda Virtual</h3>
         <p>Tu tienda de confianza para compras en línea</p>
+        <div class="social-links">
+          <a href="#" aria-label="Facebook">📘 Facebook</a>
+          <a href="#" aria-label="Instagram">📷 Instagram</a>
+          <a href="#" aria-label="WhatsApp">💬 WhatsApp</a>
+        </div>
       </div>
-
+      
       <div class="footer-section">
         <h4>Enlaces Rápidos</h4>
         <ul>
@@ -187,38 +100,44 @@
           <li><a href="./html/login.html">Iniciar Sesión</a></li>
         </ul>
       </div>
-
+      
       <div class="footer-section">
         <h4>Contacto</h4>
         <p>📧 info@tiendavirtual.com</p>
         <p>📞 +51 987 654 321</p>
         <p>📍 Lima, Perú</p>
       </div>
-
+      
       <div class="footer-section">
-        <h4>Horario</h4>
-        <p>Lunes a Viernes: 9 AM - 7 PM</p>
-        <p>Sábados: 9 AM - 2 PM</p>
+        <h4>Horario de Atención</h4>
+        <p>Lunes a Viernes: 9:00 AM - 7:00 PM</p>
+        <p>Sábados: 9:00 AM - 2:00 PM</p>
+        <p>Domingos: Cerrado</p>
       </div>
     </div>
-
+    
     <div class="footer-bottom">
       <p>&copy; 2024 Tienda Virtual. Todos los derechos reservados.</p>
     </div>
   </footer>
 
   <script src="../js/ventas.js"></script>
-
   <script>
+    // ===== Estado usuario =====
     const usuario = JSON.parse(localStorage.getItem('usuario'));
-    if (!usuario) window.location.href = './login.html';
+    if (!usuario) {
+      window.location.href = './login.html';
+    }
 
     const headerActions = document.getElementById('headerActions');
 
+    // Saludo
     const spanNombre = document.createElement('span');
     spanNombre.textContent = `Hola, ${usuario.nombre}`;
+    spanNombre.style.marginRight = '10px';
     headerActions.appendChild(spanNombre);
 
+    // Botón Admin (solo para Administrador)
     if (usuario.rol && usuario.rol.nombre.toUpperCase() === 'ADMINISTRADOR') {
       const btnAdmin = document.createElement('button');
       btnAdmin.textContent = '🛠 Administrador';
@@ -227,6 +146,7 @@
       headerActions.appendChild(btnAdmin);
     }
 
+    // Botón Cerrar sesión
     const btnLogout = document.createElement('button');
     btnLogout.textContent = 'Cerrar sesión';
     btnLogout.className = 'btn-logout';
@@ -239,3 +159,4 @@
 
 </body>
 </html>
+
