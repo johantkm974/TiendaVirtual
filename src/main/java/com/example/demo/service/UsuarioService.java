@@ -10,6 +10,8 @@ import com.example.demo.model.Rol;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.RolRepository;
 import com.example.demo.repository.UsuarioRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+
 
 @Service
 public class UsuarioService {
@@ -80,4 +82,5 @@ public class UsuarioService {
 }
 
 }
+
 
