@@ -530,6 +530,12 @@ function actualizarCarritoUI() {
 
 /* ==================== PAGOS - MANTENIENDO TODA LA FUNCIONALIDAD ==================== */
 async function procesarPagoPayPal() {
+  // 🛑 Mostrar modal de "Función no disponible"
+  document.getElementById("modalInfo").classList.add("show");
+  return; // Evita ejecutar toda la lógica real
+  
+
+  // --- Tu lógica original queda abajo pero nunca se ejecutará ---
   const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
   if (!usuario) { alert('Debes iniciar sesión'); window.location.href = './html/login.html'; return; }
   if (usuario?.rol?.nombre === 'Administrador') { alert('Los administradores no pueden comprar'); return; }
@@ -538,7 +544,6 @@ async function procesarPagoPayPal() {
   try {
     const total = carrito.reduce((s,i) => s + (Number(i.precio) * Number(i.cantidad)), 0);
 
-    // Crear venta en tu backend
     const ventaRes = await fetch('/api/ventas', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -552,7 +557,6 @@ async function procesarPagoPayPal() {
     if (!ventaRes.ok) throw new Error('Error al crear la venta en el servidor');
     const venta = await ventaRes.json();
 
-    // Solicita creación de pago PayPal
     const pagoRes = await fetch('/api/paypal/create-payment', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -563,12 +567,10 @@ async function procesarPagoPayPal() {
     const redirectUrl = pagoData.approvalUrl || pagoData.url;
     if (!redirectUrl) throw new Error('No se recibió URL de pago PayPal');
 
-    // limpiar carrito local (se podría esperar confirmación)
     carrito = [];
     guardarCarrito();
     actualizarCarritoUI();
 
-    // redirigir al checkout
     window.location.href = redirectUrl;
 
   } catch (err) {
@@ -576,7 +578,9 @@ async function procesarPagoPayPal() {
     alert('❌ Error en el pago PayPal: ' + (err.message || err));
   }
 }
+
 window.procesarPagoPayPal = procesarPagoPayPal;
+
 
 async function procesarPagoSimulado() {
   const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
@@ -692,5 +696,6 @@ window.cambiarCantidad = cambiarCantidad;
 window.vaciarCarrito = vaciarCarrito;
 window.procesarPagoPayPal = procesarPagoPayPal;
 window.procesarPagoSimulado = procesarPagoSimulado;
+
 
 
