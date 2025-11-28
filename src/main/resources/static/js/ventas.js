@@ -15,7 +15,7 @@ function mostrarSeccion(id) {
 }
 
 /* =======================================
-   CARGAR USUARIOS (LÓGICA ORIGINAL DEL ADMIN)
+   CARGAR USUARIOS
 ======================================= */
 async function cargarUsuarios() {
   const tabla = document.querySelector("#tablaUsuarios tbody");
@@ -26,10 +26,7 @@ async function cargarUsuarios() {
     const usuarios = await res.json();
 
     usuarios.forEach(u => {
-
-      // 👉 MISMA LÓGICA QUE USABAS EN EL BOTÓN ELIMINAR (FUNCIONA PERFECTO)
       const esAdmin = u.rol && (u.rol.id === 1 || u.rol.nombre?.toUpperCase() === "ADMINISTRADOR");
-
       const fila = document.createElement("tr");
 
       fila.innerHTML = `
@@ -37,7 +34,6 @@ async function cargarUsuarios() {
         <td>${u.nombre}</td>
         <td>${u.correo}</td>
         <td>${esAdmin ? "Administrador" : "Cliente"}</td>
-
         <td>
           ${
             esAdmin
@@ -64,14 +60,13 @@ async function cargarUsuarios() {
 }
 
 /* =======================================
-   MODAL → ABRIR / CERRAR
+   MODAL EDITAR USUARIO
 ======================================= */
 function abrirModal(id, nombre, correo) {
   document.getElementById("editId").value = id;
   document.getElementById("editNombre").value = nombre;
   document.getElementById("editCorreo").value = correo;
 
-  // Contraseña limpia y visible correctamente
   const pass = document.getElementById("editContrasena");
   pass.value = "";
   pass.style.background = "white";
@@ -85,7 +80,7 @@ function cerrarModal() {
 }
 
 /* =======================================
-   GUARDAR CAMBIOS DE USUARIO (PUT)
+   GUARDAR CAMBIOS
 ======================================= */
 async function guardarCambiosUsuario() {
   const id = document.getElementById("editId").value;
@@ -93,13 +88,8 @@ async function guardarCambiosUsuario() {
   const correo = document.getElementById("editCorreo").value;
   const contrasena = document.getElementById("editContrasena").value;
 
-  // Solo se envían datos modificados
   const data = { nombre, correo };
-
-  // Contraseña solo si fue modificada
-  if (contrasena.trim() !== "") {
-    data.contrasena = contrasena;
-  }
+  if (contrasena.trim() !== "") data.contrasena = contrasena;
 
   try {
     const res = await fetch(`${API_BASE}/usuarios/${id}`, {
@@ -109,8 +99,7 @@ async function guardarCambiosUsuario() {
     });
 
     if (!res.ok) {
-      const error = await res.text();
-      Swal.fire("Error", error, "error");
+      Swal.fire("Error", await res.text(), "error");
       return;
     }
 
@@ -139,18 +128,10 @@ async function eliminarUsuario(id) {
   if (!confirmar.isConfirmed) return;
 
   try {
-    const res = await fetch(`${API_BASE}/usuarios/${id}`, {
-      method: "DELETE"
-    });
+    const res = await fetch(`${API_BASE}/usuarios/${id}`, { method: "DELETE" });
 
     if (!res.ok) {
-      const error = await res.text();
-
-      Swal.fire({
-        icon: "error",
-        title: "No se puede eliminar",
-        text: error
-      });
+      Swal.fire("Error", await res.text(), "error");
       return;
     }
 
@@ -164,17 +145,12 @@ async function eliminarUsuario(id) {
     cargarUsuarios();
 
   } catch (error) {
-    Swal.fire({
-      icon: "error",
-      title: "Error inesperado",
-      text: "No se pudo eliminar el usuario."
-    });
+    Swal.fire("Error", "No se pudo eliminar el usuario", "error");
   }
 }
 
-
 /* =======================================
-   VENTAS
+   CARGAR VENTAS
 ======================================= */
 async function cargarVentas() {
   const tabla = document.querySelector("#tablaVentas tbody");
@@ -189,18 +165,22 @@ async function cargarVentas() {
   }
 }
 
+/* =======================================
+   MOSTRAR VENTAS EN TABLA
+======================================= */
 function mostrarVentas(ventas) {
   const tabla = document.querySelector("#tablaVentas tbody");
   tabla.innerHTML = "";
 
   ventas.forEach(v => {
     const fila = document.createElement("tr");
+
     fila.innerHTML = `
       <td>${v.id}</td>
       <td>${v.usuario ? v.usuario.nombre : "Sin usuario"}</td>
       <td>${v.metodoPago ? v.metodoPago.nombre : "N/A"}</td>
       <td>${v.total ? v.total.toFixed(2) : "0.00"}</td>
-      <td>${v.estadoPago || "Pendiente"}</td>
+      <td>${v.estadoPago || "PENDIENTE"}</td>
       <td>
         ${
           v.estadoPago === "APROBADO"
@@ -210,21 +190,70 @@ function mostrarVentas(ventas) {
         <button class="btn btn-eliminar" onclick="eliminarVenta(${v.id})">🗑</button>
       </td>
     `;
+
     tabla.appendChild(fila);
   });
 }
 
 /* =======================================
-   EVENTO AL INICIAR
+   CONFIRMAR PAGO
+======================================= */
+async function confirmarPago(ventaId) {
+  const paymentId = prompt("Ingrese Payment ID (o vacío si es manual):");
+  if (paymentId === null) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/ventas/confirmar-pago`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ventaId: ventaId,
+        paymentId: paymentId || "MANUAL"
+      })
+    });
+
+    const data = await res.json();
+    alert(data.message || "Pago confirmado.");
+    cargarVentas();
+
+  } catch (error) {
+    alert("Error confirmando pago");
+    console.error(error);
+  }
+}
+
+/* =======================================
+   ELIMINAR VENTA
+======================================= */
+async function eliminarVenta(id) {
+  if (!confirm("¿Seguro de eliminar esta venta?")) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/ventas/${id}`, { method: "DELETE" });
+    const data = await res.json().catch(() => ({}));
+
+    alert(data.message || data.error || "Venta eliminada.");
+    cargarVentas();
+
+  } catch (error) {
+    console.error("Error al eliminar venta:", error);
+    alert("No se pudo eliminar la venta.");
+  }
+}
+
+/* =======================================
+   ABRIR PDF DEL RECIBO
+======================================= */
+function verRecibo(id) {
+  window.open(`${API_BASE}/ventas/${id}/recibo`, "_blank");
+}
+
+/* =======================================
+   INICIAR
 ======================================= */
 document.addEventListener("DOMContentLoaded", () => {
   mostrarSeccion("usuarios");
 });
-
-
-
-
-
 
 
 
