@@ -1,5 +1,6 @@
 let todasLasVentas = [];
 
+// Base API
 const API_BASE = "/api";
 
 /* =======================================
@@ -25,10 +26,9 @@ async function cargarUsuarios() {
     const usuarios = await res.json();
 
     usuarios.forEach(u => {
-      const esAdmin = 
-    u.rol?.nombre?.trim().toLowerCase() === "administrador" ||
-    u.rol?.nombre?.trim().toLowerCase() === "admin";
-
+      const esAdmin =
+        u.rol?.nombre?.trim().toLowerCase() === "administrador" ||
+        u.rol?.nombre?.trim().toLowerCase() === "admin";
 
       const fila = document.createElement("tr");
 
@@ -38,12 +38,15 @@ async function cargarUsuarios() {
         <td>${u.correo}</td>
         <td>${esAdmin ? "Administrador" : "Cliente"}</td>
         <td>
+
+          <!-- BOTÓN EDITAR -->
           <button class="btn btn-editar"
             onclick="abrirModal(${u.id}, '${u.nombre}', '${u.correo}', ${esAdmin})"
             ${esAdmin ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
             ✏ Editar
           </button>
 
+          <!-- BOTÓN ELIMINAR -->
           ${esAdmin ? "" : `
             <button class="btn btn-eliminar" onclick="eliminarUsuario(${u.id})">
               🗑 Eliminar
@@ -53,6 +56,7 @@ async function cargarUsuarios() {
 
       tabla.appendChild(fila);
     });
+
   } catch (error) {
     console.error("Error al cargar usuarios:", error);
   }
@@ -71,6 +75,12 @@ function abrirModal(id, nombre, correo, esAdmin) {
   document.getElementById("editNombre").value = nombre;
   document.getElementById("editCorreo").value = correo;
 
+  // Asegura que el input contraseña NO esté transparente
+  const passInput = document.getElementById("editContrasena");
+  passInput.value = "";
+  passInput.style.background = "white";
+  passInput.style.color = "black";
+
   document.getElementById("modalEditar").style.display = "flex";
 }
 
@@ -79,7 +89,7 @@ function cerrarModal() {
 }
 
 /* =======================================
-   GUARDAR CAMBIOS
+   GUARDAR CAMBIOS (PUT)
 ======================================= */
 async function guardarCambiosUsuario() {
   const id = document.getElementById("editId").value;
@@ -87,11 +97,19 @@ async function guardarCambiosUsuario() {
   const correo = document.getElementById("editCorreo").value;
   const contrasena = document.getElementById("editContrasena").value;
 
+  // enviar solo lo necesario
+  const data = { nombre, correo };
+
+  // enviar solo si se modificó
+  if (contrasena.trim() !== "") {
+    data.contrasena = contrasena;
+  }
+
   try {
     const res = await fetch(`${API_BASE}/usuarios/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre, correo, contrasena })
+      body: JSON.stringify(data)
     });
 
     if (!res.ok) {
@@ -100,9 +118,10 @@ async function guardarCambiosUsuario() {
       return;
     }
 
-    Swal.fire("Éxito", "Usuario actualizado", "success");
+    Swal.fire("Éxito", "Usuario actualizado correctamente", "success");
     cerrarModal();
     cargarUsuarios();
+
   } catch (error) {
     Swal.fire("Error", "Hubo un problema al actualizar", "error");
   }
@@ -112,7 +131,7 @@ async function guardarCambiosUsuario() {
    ELIMINAR USUARIO
 ======================================= */
 async function eliminarUsuario(id) {
-  if (!confirm("¿Eliminar usuario?")) return;
+  if (!confirm("¿Seguro que deseas eliminar este usuario?")) return;
 
   try {
     const res = await fetch(`${API_BASE}/usuarios/${id}`, { method: "DELETE" });
@@ -146,6 +165,7 @@ function mostrarVentas(ventas) {
 
   ventas.forEach(v => {
     const fila = document.createElement("tr");
+
     fila.innerHTML = `
       <td>${v.id}</td>
       <td>${v.usuario ? v.usuario.nombre : "Sin usuario"}</td>
@@ -157,21 +177,19 @@ function mostrarVentas(ventas) {
           ? `<button class="btn btn-ver" onclick="verRecibo(${v.id})">📄 PDF</button>`
           : `<button class="btn btn-confirmar" onclick="confirmarPago(${v.id})">Confirmar</button>`
         }
+        <button class="btn btn-eliminar" onclick="eliminarVenta(${v.id})">🗑</button>
       </td>
     `;
+
     tabla.appendChild(fila);
   });
 }
 
-/* ======================================= */
 document.addEventListener("DOMContentLoaded", () => {
   mostrarSeccion("usuarios");
 });
 
 
-
-
-  
 
 
 
