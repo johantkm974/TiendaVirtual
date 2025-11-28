@@ -5,17 +5,13 @@ import com.cloudinary.utils.ObjectUtils;
 import com.example.demo.model.DetalleVenta;
 import com.example.demo.model.Venta;
 import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,73 +21,146 @@ public class PdfGeneratorService {
     private Cloudinary cloudinary;
 
     public String generarReciboPDF(Venta venta) throws Exception {
+
         String carpetaTemporal = "/tmp";
         String nombreArchivo = "recibo_venta_" + venta.getId() + ".pdf";
         String rutaArchivo = carpetaTemporal + "/" + nombreArchivo;
 
-        // 1️⃣ Generar PDF localmente
-        Document document = new Document();
+        Document document = new Document(PageSize.A4, 40, 40, 40, 40);
         PdfWriter.getInstance(document, new FileOutputStream(rutaArchivo));
         document.open();
 
-        Font fontTitulo = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
-        Paragraph titulo = new Paragraph("Recibo de Venta", fontTitulo);
+        /* =======================
+             ESTILOS
+        ======================= */
+        Font tituloFont = new Font(Font.FontFamily.HELVETICA, 20, Font.BOLD);
+        Font subtituloFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
+        Font normalFont = new Font(Font.FontFamily.HELVETICA, 11, Font.NORMAL);
+
+        /* =======================
+             TÍTULO
+        ======================= */
+        Paragraph titulo = new Paragraph("RECIBO DE VENTA", tituloFont);
         titulo.setAlignment(Element.ALIGN_CENTER);
         document.add(titulo);
-        document.add(new Paragraph(" "));
+        document.add(Chunk.NEWLINE);
 
-        document.add(new Paragraph("Fecha: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date())));
-        document.add(new Paragraph("Cliente: " + venta.getCliente().getNombre()));
-        document.add(new Paragraph(" "));
+        /* =======================
+             INFORMACIÓN GENERAL
+        ======================= */
+        PdfPTable info = new PdfPTable(2);
+        info.setWidthPercentage(100);
+        info.setSpacingBefore(10);
+        info.setSpacingAfter(20);
+
+        info.addCell(celda("ID Venta:", subtituloFont));
+        info.addCell(celda(String.valueOf(venta.getId()), normalFont));
+
+        info.addCell(celda("Fecha:", subtituloFont));
+        info.addCell(celda(
+                new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()),
+                normalFont
+        ));
+
+        info.addCell(celda("Cliente:", subtituloFont));
+        info.addCell(celda(venta.getUsuario().getNombre(), normalFont));
+
+        info.addCell(celda("Correo:", subtituloFont));
+        info.addCell(celda(venta.getUsuario().getCorreo(), normalFont));
+
+        info.addCell(celda("Método de Pago:", subtituloFont));
+        info.addCell(celda(
+                venta.getMetodoPago() != null ? venta.getMetodoPago().getNombre() : "N/A",
+                normalFont
+        ));
+
+        info.addCell(celda("Estado Pago:", subtituloFont));
+        info.addCell(celda(venta.getEstadoPago(), normalFont));
+
+        info.addCell(celda("Payment ID:", subtituloFont));
+        info.addCell(celda(
+                venta.getPaymentId() != null ? venta.getPaymentId() : "N/A",
+                normalFont
+        ));
+
+        document.add(info);
+
+        /* =======================
+             TABLA DE DETALLES
+        ======================= */
+        Paragraph subtitulo = new Paragraph("Detalles de la Compra", subtituloFont);
+        subtitulo.setSpacingAfter(8);
+        document.add(subtitulo);
 
         PdfPTable tabla = new PdfPTable(4);
         tabla.setWidthPercentage(100);
         tabla.setWidths(new float[]{4, 2, 2, 2});
 
-        String[] encabezados = {"Producto", "Cantidad", "Precio Unitario", "Subtotal"};
-        for (String encabezado : encabezados) {
-            PdfPCell celda = new PdfPCell(new Phrase(encabezado));
-            celda.setBackgroundColor(BaseColor.LIGHT_GRAY);
-            tabla.addCell(celda);
-        }
+        tabla.addCell(celdaHeader("Producto"));
+        tabla.addCell(celdaHeader("Cantidad"));
+        tabla.addCell(celdaHeader("Precio Unit."));
+        tabla.addCell(celdaHeader("Subtotal"));
 
-        for (DetalleVenta detalle : venta.getDetalles()) {
-            tabla.addCell(detalle.getProducto().getNombre());
-            tabla.addCell(String.valueOf(detalle.getCantidad()));
-            tabla.addCell(String.format("S/ %.2f", detalle.getPrecio()));
-            tabla.addCell(String.format("S/ %.2f", detalle.getCantidad() * detalle.getPrecio()));
+        for (DetalleVenta d : venta.getDetalles()) {
+            tabla.addCell(celda(d.getProducto().getNombre(), normalFont));
+            tabla.addCell(celda(String.valueOf(d.getCantidad()), normalFont));
+            tabla.addCell(celda(String.format("S/ %.2f", d.getPrecio()), normalFont));
+            tabla.addCell(celda(String.format("S/ %.2f", d.getSubtotal()), normalFont));
         }
 
         document.add(tabla);
-        document.add(new Paragraph(" "));
-        document.add(new Paragraph("Total: S/ " + String.format("%.2f", venta.getTotal())));
+
+        /* =======================
+             TOTAL
+        ======================= */
+        Paragraph total = new Paragraph(
+                "\nTOTAL A PAGAR:  S/ " + String.format("%.2f", venta.getTotal()),
+                new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD)
+        );
+        total.setAlignment(Element.ALIGN_RIGHT);
+        document.add(total);
+
+        /* =======================
+             MENSAJE FINAL
+        ======================= */
+        Paragraph msg = new Paragraph(
+                "\nGracias por tu compra.\nTienda Virtual - Lima Perú",
+                normalFont
+        );
+        msg.setAlignment(Element.ALIGN_CENTER);
+        msg.setSpacingBefore(20);
+        document.add(msg);
+
         document.close();
 
-        // 2️⃣ Subir PDF a Cloudinary
-        try {
-            System.out.println("📤 Subiendo recibo a Cloudinary...");
-
-            Map uploadResult = cloudinary.uploader().upload(
+        /* =======================
+            SUBIR A CLOUDINARY
+        ======================= */
+        Map uploadResult = cloudinary.uploader().upload(
                 new java.io.File(rutaArchivo),
                 ObjectUtils.asMap(
                         "folder", "recibos_tienda_virtual",
                         "resource_type", "auto",
                         "public_id", "recibo_" + venta.getId()
                 )
-            );
+        );
 
-            String url = (String) uploadResult.get("secure_url");
+        new java.io.File(rutaArchivo).delete();
 
-            System.out.println("✅ PDF subido a Cloudinary correctamente: " + url);
+        return uploadResult.get("secure_url").toString();
+    }
 
-            // 🧹 Eliminar archivo local temporal
-            new java.io.File(rutaArchivo).delete();
+    private PdfPCell celda(String texto, Font font) {
+        PdfPCell c = new PdfPCell(new Phrase(texto, font));
+        c.setBorder(Rectangle.NO_BORDER);
+        return c;
+    }
 
-            return url;
-        } catch (Exception e) {
-            System.err.println("❌ Error al subir PDF a Cloudinary: " + e.getMessage());
-            throw new RuntimeException("Error al subir PDF a Cloudinary", e);
-        }
+    private PdfPCell celdaHeader(String texto) {
+        PdfPCell c = new PdfPCell(new Phrase(texto));
+        c.setBackgroundColor(BaseColor.LIGHT_GRAY);
+        c.setHorizontalAlignment(Element.ALIGN_CENTER);
+        return c;
     }
 }
 
