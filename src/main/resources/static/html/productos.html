@@ -1,165 +1,125 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Gestión de Productos - Tienda Virtual</title>
 
-  <!-- Bootstrap para responsive básico -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <!-- CSS PRINCIPAL -->
+  <link rel="stylesheet" href="../css/productos.css?v=2">
 
-  <!-- CSS de navegación / header -->
-
-
-  <!-- CSS propio del panel -->
-  <link rel="stylesheet" href="../css/productos.css">
-
+  <!-- SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Bootstrap Icons (opcional) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
 
 <body>
 
-  <!-- Loader -->
-  <div class="loader-overlay" id="loader">
-    <div class="loader"></div>
-  </div>
-
-  <!-- ===================================================== -->
-  <!--                     HEADER / NAV                     -->
-  <!-- ===================================================== -->
+  <!-- ===================== HEADER (NAV) ====================== -->
   <header class="header">
-      <div class="logo">
-          <img src="/img/logo.png" alt="Logo Tienda">
-          <h1>Tienda Virtual</h1>
-      </div>
+    <div class="logo">
+      <img src="/img/logo.png" alt="Logo">
+      <h1>Tienda Virtual</h1>
+    </div>
 
-      <nav>
-          <ul>
-              <li><a href="../index.html">Inicio</a></li>
-              <li><a href="./productos.html">Gestionar Productos</a></li>
-              <li><a href="./gestion_ventas.html">Gestionar Ventas</a></li>
-          </ul>
-      </nav>
+    <nav>
+      <ul>
+        <li><a href="../index.html">Inicio</a></li>
+        <li><a href="./productos.html">Gestionar Productos</a></li>
+        <li><a href="./gestion_ventas.html">Gestionar Ventas</a></li>
+      </ul>
+    </nav>
 
-      <div class="header-actions" id="headerActions"></div>
+    <div class="header-actions" id="headerActions"></div>
   </header>
 
-  <!-- ===================================================== -->
-  <!--                  TÍTULO PRINCIPAL                     -->
-  <!-- ===================================================== -->
-  <h1>Gestión de Productos</h1>
+  <!-- ===================== CONTENIDO ====================== -->
+  <div class="contenedor-admin">
 
-  <!-- ===================================================== -->
-  <!--                     ACCIONES                          -->
-  <!-- ===================================================== -->
-  <div class="acciones">
-      <select id="filtroCategoria" class="form-select" style="max-width: 250px;">
-        <option value="">Todas las categorías</option>
-      </select>
+    <h1 class="titulo">Gestión de Productos</h1>
 
-      <button id="btnAgregar" class="btn btn-success">
-        ➕ Agregar Producto
-      </button>
-  </div>
+    <div class="acciones">
+      <select id="filtroCategoria"></select>
+      <button id="btnAgregar">➕ Agregar Producto</button>
+    </div>
 
-  <!-- ===================================================== -->
-  <!--                     TABLA PRODUCTOS                    -->
-  <!-- ===================================================== -->
-  <div class="table-wrapper">
+    <div class="tabla-container">
       <table id="tablaProductos">
-          <thead>
-              <tr>
-                  <th>ID</th>
-                  <th>Nombre</th>
-                  <th>Precio</th>
-                  <th>Stock</th>
-                  <th>Categoría</th>
-                  <th>Imagen</th>
-                  <th>Acciones</th>
-              </tr>
-          </thead>
-          <tbody></tbody>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Categoría</th>
+            <th>Imagen</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
       </table>
+    </div>
+
   </div>
 
-  <!-- ===================================================== -->
-  <!--                        MODAL                           -->
-  <!-- ===================================================== -->
+  <!-- ===================== MODAL ====================== -->
   <div class="modal" id="modalProducto">
-      <div class="modal-content">
-          <span class="close" id="cerrarModal">&times;</span>
-          <h2 id="tituloModal">Nuevo Producto</h2>
+    <div class="modal-content">
+      <span class="close" id="cerrarModal">&times;</span>
+      <h2 id="tituloModal">Nuevo Producto</h2>
 
-          <form id="productoForm">
-              <input type="hidden" id="id">
+      <form id="productoForm">
+        <input type="hidden" id="id">
 
-              <input type="text" id="nombre" placeholder="Nombre" required>
-              <input type="text" id="descripcion" placeholder="Descripción">
+        <input type="text" id="nombre" placeholder="Nombre" required>
+        <input type="text" id="descripcion" placeholder="Descripción">
 
-              <input type="number" id="precio" placeholder="Precio" step="any" required>
-              <input type="number" id="stock" placeholder="Stock" required>
+        <input type="number" id="precio" placeholder="Precio" step="any" required>
+        <input type="number" id="stock" placeholder="Stock" required>
 
-              <!-- CATEGORÍAS -->
-              <select name="categoria.id" id="categoriaSelect" required></select>
+        <select name="categoria.id" id="categoriaSelect" required></select>
 
-              <!-- IMAGEN -->
-              <input type="hidden" id="imagenActual">
-              <input type="file" id="imagen" accept="image/*">
+        <input type="hidden" id="imagenActual">
+        <input type="file" id="imagen" accept="image/*">
 
-              <img id="imagenPreview" src="" style="display:none;">
+        <img id="imagenPreview" src="" style="display:none;">
 
-              <button type="submit" class="btn btn-success mt-3">Guardar</button>
-          </form>
-      </div>
+        <button type="submit">Guardar</button>
+      </form>
+    </div>
   </div>
 
-  <!-- ===================================================== -->
-  <!--                        FOOTER                          -->
-  <!-- ===================================================== -->
+  <!-- ===================== FOOTER ====================== -->
   <footer class="footer">
-      <div class="footer-content">
-          <div class="footer-section">
-              <h3>Tienda Virtual</h3>
-              <p>Tu tienda de confianza para compras en línea.</p>
-              <div class="social-links">
-                  <a href="#">📘 Facebook</a>
-                  <a href="#">📷 Instagram</a>
-                  <a href="#">💬 WhatsApp</a>
-              </div>
-          </div>
-
-          <div class="footer-section">
-              <h4>Enlaces Rápidos</h4>
-              <ul>
-                  <li><a href="../index.html">Inicio</a></li>
-                  <li><a href="#contacto">Contacto</a></li>
-                  <li><a href="./login.html">Iniciar Sesión</a></li>
-              </ul>
-          </div>
-
-          <div class="footer-section">
-              <h4>Contacto</h4>
-              <p>📧 info@tiendavirtual.com</p>
-              <p>📞 +51 987 654 321</p>
-              <p>📍 Lima, Perú</p>
-          </div>
-
-          <div class="footer-section">
-              <h4>Horario de Atención</h4>
-              <p>Lunes a Viernes: 9:00 AM - 7:00 PM</p>
-              <p>Sábados: 9:00 AM - 2:00 PM</p>
-              <p>Domingos: Cerrado</p>
-          </div>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Tienda Virtual</h3>
+        <p>Tu tienda de confianza para compras en línea.</p>
       </div>
 
-      <div class="footer-bottom">
-          <p>&copy; 2024 Tienda Virtual. Todos los derechos reservados.</p>
+      <div class="footer-section">
+        <h4>Enlaces</h4>
+        <ul>
+          <li><a href="../index.html">Inicio</a></li>
+          <li><a href="./login.html">Iniciar Sesión</a></li>
+        </ul>
       </div>
+
+      <div class="footer-section">
+        <h4>Contacto</h4>
+        <p>📧 info@tienda.com</p>
+        <p>📞 +51 900 000 000</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2024 Tienda Virtual — Todos los derechos reservados.</p>
+    </div>
   </footer>
 
-  <!-- ===================================================== -->
-  <!--                  SCRIPTS DE FUNCIONALIDAD             -->
-  <!-- ===================================================== -->
-  <script src="../js/productos.js?v=12345"></script>
+  <script src="../js/productos.js?v=2"></script>
+
 </body>
 </html>
 
